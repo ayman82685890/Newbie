@@ -575,7 +575,6 @@
         let adsWatchedThisHour = 0; 
         let lastAdHourResetTime = 0; 
         let lastTapTime = 0;
-        let tapAvailable = true;
         let adCooldown = false;
         
         const HOUR_IN_MS = 60 * 60 * 1000; 
@@ -583,8 +582,8 @@
         const AD_REWARD = 1;
         const TASK_REWARD = 3;
         const AD_COOLDOWN_SECONDS = 10;
-        const DAILY_AD_LIMIT = 60;
-        const HOURLY_AD_LIMIT = 20; // 20 Ads per hour
+        const DAILY_AD_LIMIT = 60; // Max 60 ads per day
+        const HOURLY_AD_LIMIT = 20; // Max 20 ads per hour
         // Hypothetical conversion rate for display: 1000 NBT = $1
         const NBT_USD_RATE = 1 / 1000; 
         
@@ -598,6 +597,10 @@
             { id: 4, name: "Join Telegram Group 2", link: "https://t.me/NWEBIE67", status: "pending" },
             { id: 5, name: "Follow on Twitter", link: "https://twitter.com/newbiecoin_placeholder", status: "pending" }
         ];
+        
+        // A temporary array to hold task statuses loaded from storage, before merging with TASKS
+        let savedTaskStatuses = []; 
+
 
         // DOM elements
         const menuBtns = document.querySelectorAll('.menu-btn');
@@ -619,6 +622,7 @@
         // --- Persistence Functions ---
 
         function saveData() {
+            // Save only the essential state and task statuses
             const data = {
                 nbtBalance: nbtBalance,
                 usdtBalance: usdtBalance,
@@ -627,7 +631,7 @@
                 lastAdHourResetTime: lastAdHourResetTime,
                 lastTapTime: lastTapTime,
                 adCooldown: adCooldown,
-                tasks: TASKS.map(t => ({ id: t.id, status: t.status }))
+                tasks: TASKS.map(t => ({ id: t.id, status: t.status })) // Save current statuses
             };
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -641,6 +645,8 @@
                 const savedData = localStorage.getItem(STORAGE_KEY);
                 if (savedData) {
                     const data = JSON.parse(savedData);
+                    
+                    // Load all simple state variables
                     nbtBalance = data.nbtBalance || 0;
                     usdtBalance = data.usdtBalance || 0.00;
                     dailyAdsWatched = data.dailyAdsWatched || 0;
@@ -649,22 +655,32 @@
                     lastTapTime = data.lastTapTime || 0;
                     adCooldown = data.adCooldown || false;
 
-                    // Load tasks statuses
+                    // Load tasks statuses into the temporary array
                     if (data.tasks && Array.isArray(data.tasks)) {
-                       data.tasks.forEach(savedTask => {
-                           const localTask = TASKS.find(t => t.id === savedTask.id);
-                           if (localTask) {
-                               localTask.status = savedTask.status;
-                           }
-                       });
+                       savedTaskStatuses = data.tasks;
                     }
+                    return true; // Data loaded successfully
                 }
             } catch (e) {
                 console.error("Error loading data from localStorage:", e);
-                // If data is corrupt, clear it and start fresh
-                localStorage.removeItem(STORAGE_KEY); 
+                // If data is corrupt, return false so initialize treats it as fresh
+                return false;
+            }
+            return false; // No data found
+        }
+        
+        function applyTaskStatuses() {
+            // Merge saved statuses with the master TASKS array
+            if (savedTaskStatuses.length > 0) {
+                savedTaskStatuses.forEach(savedTask => {
+                    const localTask = TASKS.find(t => t.id === savedTask.id);
+                    if (localTask) {
+                        localTask.status = savedTask.status;
+                    }
+                });
             }
         }
+
 
         // --- Core Functions ---
 
@@ -719,11 +735,12 @@
                 isDisabled = true;
                 buttonText = `Hourly Limit Reached (${HOURLY_AD_LIMIT})`;
             } else if (adCooldown) {
-                 buttonText = watchAdBtn.textContent; // Keep existing cooldown text
+                 // Keep existing cooldown text if timer is running
+                 buttonText = watchAdBtn.textContent; 
             }
 
             watchAdBtn.disabled = isDisabled;
-            // Only update button text if it's not currently displaying a cooldown time
+            // Only update button text if it's not currently displaying a cooldown time or is disabled
             if (!adCooldown || isDisabled) {
                 watchAdBtn.textContent = buttonText;
             }
@@ -757,21 +774,22 @@
         tapCoin.addEventListener('click', handleTap);
 
         function handleTap() {
-            if (!tapAvailable) return;
-            
+            // Determine tap availability from time, not a boolean flag
+            const fullCooldown = 24 * 60 * 60 * 1000;
+            const timePassed = Date.now() - lastTapTime;
+            if (timePassed < fullCooldown) return;
+
             nbtBalance += TAP_REWARD;
             updateBalance();
             
             showNotification(`${TAP_REWARD} NBT added! See you in 24 hours!`);
             createCoinPop(TAP_REWARD);
             
-            tapAvailable = false;
+            // Set new cooldown time
             lastTapTime = Date.now();
             saveData(); 
             
             updateTapTimer();
-            
-            tapBtn.disabled = true;
         }
 
         function createCoinPop(amount) {
@@ -794,18 +812,12 @@
             const timeRemaining = fullCooldown - timePassed;
             
             if (timeRemaining <= 0) {
-                tapAvailable = true;
                 tapBtn.disabled = false;
                 countdownEl.textContent = "00:00:00";
                 tapBtn.textContent = "Tap to Get Coins";
-                if (lastTapTime !== 0) {
-                    lastTapTime = 0;
-                    saveData();
-                }
                 return;
             }
             
-            tapAvailable = false;
             tapBtn.disabled = true;
             tapBtn.textContent = "On Cooldown";
             
@@ -815,6 +827,7 @@
             
             countdownEl.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             
+            // Only update the timer if time is remaining
             setTimeout(updateTapTimer, 1000);
         }
         
@@ -870,21 +883,26 @@
             }
         }
         
-        function startAdCooldown() {
+        function startAdCooldown(initialCooldown = AD_COOLDOWN_SECONDS) {
             adCooldown = true;
             watchAdBtn.disabled = true;
             
-            let countdown = AD_COOLDOWN_SECONDS;
-            adCooldownDisplayEl.textContent = `${countdown}s`;
-            watchAdBtn.textContent = `Cooldown: ${countdown}s`;
+            let countdown = initialCooldown;
             
+            // Check if a timer is already running to avoid duplicates
+            if (watchAdBtn.dataset.timerId) {
+                clearInterval(watchAdBtn.dataset.timerId);
+            }
+
             const timer = setInterval(() => {
                 countdown--;
+                // Ensure display updates immediately
                 adCooldownDisplayEl.textContent = `${countdown}s`;
                 watchAdBtn.textContent = `Cooldown: ${countdown}s`;
                 
                 if (countdown <= 0) {
                     clearInterval(timer);
+                    delete watchAdBtn.dataset.timerId; // Remove the timer ID
                     adCooldown = false;
                     adCooldownDisplayEl.textContent = 'Ready';
                     
@@ -892,8 +910,10 @@
                     saveData(); 
                 }
             }, 1000);
+            
+            watchAdBtn.dataset.timerId = timer; // Store timer ID for cleanup
         }
-
+        
         // --- Task Section ---
         
         function renderTasks() {
@@ -933,6 +953,7 @@
             if (task && task.status !== 'completed') {
                 
                 // Simulate claim after they click to open the link
+                // This gives them time to actually perform the action
                 setTimeout(() => {
                     // Re-check status in case they click multiple times fast
                     if (task.status !== 'completed') {
@@ -960,14 +981,44 @@
         // --- Initialization ---
 
         function initialize() {
-            loadData(); 
-            checkAdLimits(); // Call this immediately on load to ensure the hourly count is correct
-            updateEarnSectionDisplay(); 
-            updateTapTimer();
-            renderTasks();
+            // ----------------------------------------------------
+            // ✅ PERSISTENCE SYSTEM IMPLEMENTATION
+            // Call loadData() to retrieve saved state. If it returns false,
+            // we'll proceed with the default initial values defined globally.
+            // ----------------------------------------------------
+            const dataLoaded = loadData();
             
-            // Set initial ad cooldown display (only needed if adCooldown state was saved)
-            adCooldownDisplayEl.textContent = adCooldown ? '...' : 'Ready';
+            if (dataLoaded) {
+                applyTaskStatuses();
+            } else {
+                 // If no data or corrupt data, ensure all state is the default fresh start
+                nbtBalance = 0;
+                usdtBalance = 0.00; 
+                dailyAdsWatched = 0;
+                adsWatchedThisHour = 0; 
+                lastAdHourResetTime = 0; 
+                lastTapTime = 0; 
+                adCooldown = false;
+                TASKS.forEach(task => task.status = 'pending');
+            }
+            // ----------------------------------------------------
+
+            // Start all periodic and display updates
+            checkAdLimits(); 
+            updateEarnSectionDisplay(); 
+            
+            // If adCooldown is true, restart the visual timer (crucial for persistence)
+            if (adCooldown) {
+                // Since we don't save the exact remaining cooldown time, we restart the full timer.
+                // A better system would save Date.now() + AD_COOLDOWN_SECONDS * 1000.
+                startAdCooldown(AD_COOLDOWN_SECONDS);
+            } else {
+                 adCooldownDisplayEl.textContent = 'Ready';
+            }
+            
+            updateTapTimer(); // Handles tap cooldown and availability
+            renderTasks();
+            updateBalance(); // Final balance update
         }
         
         initialize();
