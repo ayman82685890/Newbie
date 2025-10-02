@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newbie Coin Bot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a2a6c; /* Dark Blue */
+            --secondary-color: #b21f1f; /* Deep Red */
+            --accent-color: #fdbb2d; /* Gold/Yellow */
+            --bg-dark: rgba(0, 0, 0, 0.85);
+            --bg-light: rgba(255, 255, 255, 0.1);
+            --shadow-dark: 0 5px 20px rgba(0, 0, 0, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            color: white;
+            min-height: 100vh;
+            padding-bottom: 80px; /* Space for the bottom menu */
+            position: relative;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: var(--bg-dark);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-dark);
+            min-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .logo {
+            font-size: 2.8rem;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px var(--accent-color);
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            font-weight: 300;
+        }
+
+        .content {
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Bottom Menu Navigation */
+        .menu {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            background: var(--bg-dark);
+            border-top: 1px solid var(--accent-color);
+            z-index: 100;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        @media (min-width: 500px) {
+            .menu {
+                border-radius: 0 0 20px 20px;
+                left: unset;
+                right: unset;
+            }
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px 10px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            opacity: 0.7;
+            text-decoration: none; /* Ensure it looks like a button */
+        }
+        
+        .menu-btn i {
+            font-size: 1.5rem;
+        }
+
+        .menu-btn.active {
+            color: var(--accent-color);
+            background: rgba(253, 187, 45, 0.1);
+            transform: translateY(-2px);
+            opacity: 1;
+        }
+
+        .menu-btn:hover:not(.active) {
+            background: var(--bg-light);
+            opacity: 0.9;
+        }
+
+        /* Shared Section Styles */
+        .section-header-bg {
+            height: 150px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-dark);
+        }
+
+        .section-header-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            z-index: 0;
+        }
+
+        .section-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .section-content h2 {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+
+        /* Home Section */
+        .home-bg {
+            background: url('https://cdn.pixabay.com/photo/2016/08/24/14/29/planet-1617081_1280.jpg') center/cover;
+            height: 250px;
+        }
+
+        .coin {
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle at 30% 30%, var(--accent-color), var(--secondary-color));
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 0 30px var(--accent-color);
+            animation: pulse 2s infinite;
+            transition: transform 0.3s;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .coin:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 20px var(--accent-color); }
+            50% { box-shadow: 0 0 40px var(--accent-color); }
+            100% { box-shadow: 0 0 20px var(--accent-color); }
+        }
+
+        .tap-btn {
+            background: linear-gradient(to right, var(--accent-color), var(--secondary-color));
+            border: none;
+            color: var(--primary-color);
+            font-weight: 700;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s;
+        }
+        
+        .tap-btn:disabled {
+            background: #555;
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .tap-btn:active:not(:disabled) {
+            transform: translateY(3px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .timer {
+            text-align: center;
+            background: var(--bg-light);
+            padding: 12px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Earn Section (GigaPub) */
+        .earn-bg {
+            background: url('https://cdn.pixabay.com/photo/2016/11/15/07/09/photo-manipulation-1825450_1280.jpg') center/cover;
+        }
+
+        .ad-btn {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+
+        .ad-btn:active:not(:disabled) {
+            transform: translateY(3px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .ad-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .limits {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+            background: var(--bg-light);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 400;
+        }
+        
+        .limits div {
+            text-align: center;
+            padding: 0 10px;
+            flex: 1;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .limits div:last-child {
+            border-right: none;
+        }
+
+        /* Task Section */
+        .task-bg {
+            background: url('https://cdn.pixabay.com/photo/2017/08/30/07/56/notice-board-2696240_1280.jpg') center/cover;
+        }
+
+        .task-list {
+            margin-top: 20px;
+        }
+
+        .task-item {
+            background: var(--bg-light);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .task-btn {
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+            text-decoration: none; /* For the <a> tag buttons */
+            display: inline-block;
+        }
+        
+        .task-btn.completed {
+            background: #4CAF50; /* Green for completed */
+            cursor: default;
+        }
+        
+        .task-btn:hover:not(.completed) {
+            background: #0e1e55;
+        }
+
+        /* Trade Section */
+        .trade-bg {
+            background: url('https://cdn.pixabay.com/photo/2016/03/26/13/09/cup-of-coffee-1280537_1280.jpg') center/cover;
+            height: 250px;
+        }
+
+        .coming-soon {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            text-shadow: 0 0 15px var(--accent-color);
+            margin-bottom: 10px;
+        }
+        
+        .trade-content p {
+            font-weight: 300;
+        }
+
+        /* Profile Section */
+        .profile-bg {
+            background: url('https://cdn.pixabay.com/photo/2017/09/07/08/54/money-2724241_1280.jpg') center/cover;
+        }
+
+        .balance {
+            background: var(--bg-light);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .balance h3 {
+            font-weight: 400;
+            color: #ccc;
+        }
+
+        .balance-amount {
+            font-size: 2.5rem;
+            margin: 10px 0;
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        .usd-info {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-top: 5px;
+            font-weight: 300;
+        }
+
+        .withdraw-btn {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .withdraw-btn:active:not(:disabled) {
+            transform: translateY(3px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-dark);
+            display: none;
+            z-index: 1000;
+            border-left: 5px solid var(--accent-color);
+            font-weight: 600;
+        }
+
+        .notification.show {
+            display: block;
+            animation: fadeInOut 3s ease-in-out;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+
+        .coin-pop {
+            position: absolute;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px var(--accent-color);
+            animation: popUp 1s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes popUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-80px) scale(1.8); opacity: 0; }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <script data-project-id="YOUR_PROJECT_ID">
+        !function(){
+            var s=document.currentScript,p=s.getAttribute('data-project-id')||'default';
+            var d=['https://ad.gigapub.tech','https://ru-ad.gigapub.tech'],i=0,t,sc;
+            function l(){
+                sc=document.createElement('script');
+                sc.async=true;
+                sc.src=d[i]+'/script?id='+p;
+                clearTimeout(t);
+                t=setTimeout(function(){
+                    sc.onload=sc.onerror=null;
+                    sc.src='';
+                    if(++i<d.length)l();
+                },15000);
+                sc.onload=function(){clearTimeout(t)};
+                sc.onerror=function(){clearTimeout(t);if(++i<d.length)l()};
+                document.head.appendChild(sc);
+            }
+            l();
+        }();
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">⭐</div>
+            <h1>Newbie Coin Bot</h1>
+            <p class="subtitle">Tap, Earn, and Trade NBT tokens!</p>
+        </header>
+
+        <div class="content">
+            <div class="section active" id="home">
+                <div class="section-header-bg home-bg">
+                    <div class="coin" id="tap-coin">NBT</div>
+                </div>
+                <button class="tap-btn" id="tap-btn">Tap to Get Coins</button>
+                <div class="timer" id="timer">
+                    Next tap available in: <span id="countdown">24:00:00</span>
+                </div>
+            </div>
+
+            <div class="section" id="earn">
+                <div class="section-header-bg earn-bg">
+                    <div class="section-content">
+                        <h2>Watch & Earn</h2>
+                        <p>Watch a short ad to earn <span id="ad-reward-amount">1</span> NBT token!</p>
+                    </div>
+                </div>
+                <div class="limits">
+                    <div>Daily Ads: <span id="daily-ads">0</span>/60</div>
+                    <div>Ad Cooldown: <span id="ad-cooldown-display">Ready</span></div>
+                </div>
+                <button class="ad-btn" id="watch-ad">Watch Ad</button>
+            </div>
+
+            <div class="section" id="task">
+                <div class="section-header-bg task-bg">
+                    <div class="section-content">
+                        <h2>🚀 Complete Tasks</h2>
+                        <p>Complete social media tasks for easy NBT!</p>
+                    </div>
+                </div>
+                <div class="task-list" id="task-list">
+                    </div>
+            </div>
+
+            <div class="section" id="trade">
+                <div class="section-header-bg trade-bg">
+                    <div class="section-content">
+                        <h2>Trade NBT Tokens</h2>
+                        <div class="coming-soon">Coming Soon...</div>
+                        <p>This is where you'll **Buy/Sell** NBT for **USDT** after launch!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="profile">
+                <div class="section-header-bg profile-bg">
+                    <div class="section-content">
+                        <h2>💰 Your Wallet</h2>
+                        <p>Manage your NBT tokens and future earnings.</p>
+                    </div>
+                </div>
+                <div class="balance">
+                    <h3>Your Balance</h3>
+                    <div class="balance-amount" id="nbt-balance">0 NBT</div>
+                    <div class="usd-info">Future USDT Value (Estimate): <span id="usd-balance">$0.00</span></div>
+                    <div class="balance-amount" id="usdt-balance">0.00 USDT</div>
+                    <div class="usd-info">Your **USDT** will be available here after the **Trade** feature launches!</div>
+                </div>
+                <button class="withdraw-btn" id="withdraw-btn">Withdraw NBT/USDT</button>
+            </div>
+        </div>
+        
+        <div class="menu">
+            <button class="menu-btn active" data-section="home"><i class="fas fa-home"></i>Home</button>
+            <button class="menu-btn" data-section="earn"><i class="fas fa-video"></i>Earn</button>
+            <button class="menu-btn" data-section="task"><i class="fas fa-clipboard-list"></i>Tasks</button>
+            <button class="menu-btn" data-section="trade"><i class="fas fa-chart-line"></i>Trade</button>
+            <button class="menu-btn" data-section="profile"><i class="fas fa-user-circle"></i>Profile</button>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Global variables and constants
+        let nbtBalance = 0;
+        let usdtBalance = 0.00; // USDT is initially 0 as requested
+        let dailyAdsWatched = 0;
+        let lastTapTime = 0;
+        let tapAvailable = true;
+        let adCooldown = false;
+        const TAP_REWARD = 20;
+        const AD_REWARD = 1;
+        const TASK_REWARD = 3;
+        const AD_COOLDOWN_SECONDS = 10;
+        const DAILY_AD_LIMIT = 60;
+        // Hypothetical conversion rate for display: 1000 NBT = $1
+        const NBT_USD_RATE = 1 / 1000; 
+        
+        const TASKS = [
+            // Updated tasks with your provided Telegram links
+            { id: 1, name: "Join Telegram Channel 1", link: "https://t.me/NEWBIE540", status: "pending" },
+            { id: 2, name: "Join Telegram Channel 2", link: "https://t.me/NewbieBXD", status: "pending" },
+            { id: 3, name: "Join Telegram Group 1 (Community)", link: "https://t.me/NEWBIECOMMUNIT", status: "pending" },
+            { id: 4, name: "Join Telegram Group 2", link: "https://t.me/NWEBIE67", status: "pending" },
+            { id: 5, name: "Follow on Twitter", link: "https://twitter.com/newbiecoin_placeholder", status: "pending" }
+        ];
+
+        // DOM elements
+        const menuBtns = document.querySelectorAll('.menu-btn');
+        const sections = document.querySelectorAll('.section');
+        const tapBtn = document.getElementById('tap-btn');
+        const tapCoin = document.getElementById('tap-coin');
+        const countdownEl = document.getElementById('countdown');
+        const watchAdBtn = document.getElementById('watch-ad');
+        const dailyAdsEl = document.getElementById('daily-ads');
+        const adCooldownDisplayEl = document.getElementById('ad-cooldown-display');
+        const nbtBalanceEl = document.getElementById('nbt-balance');
+        const usdBalanceEl = document.getElementById('usd-balance');
+        const usdtBalanceEl = document.getElementById('usdt-balance');
+        const withdrawBtn = document.getElementById('withdraw-btn');
+        const notificationEl = document.getElementById('notification');
+        const taskListEl = document.getElementById('task-list');
+
+        // --- Core Functions ---
+
+        // Menu navigation
+        menuBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sectionId = btn.getAttribute('data-section');
+                
+                // Update active menu button
+                menuBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Show active section
+                sections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === sectionId) {
+                        section.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // Update Balances
+        function updateBalance() {
+            nbtBalanceEl.textContent = `${nbtBalance} NBT`;
+            // USD value is for future reference, based on NBT balance (for display only)
+            usdBalanceEl.textContent = `$${(nbtBalance * NBT_USD_RATE).toFixed(2)}`;
+            // USDT balance must remain 0.00 until the trade feature is live
+            usdtBalanceEl.textContent = `${usdtBalance.toFixed(2)} USDT`;
+            
+            // Check daily ad limit
+            if (dailyAdsWatched >= DAILY_AD_LIMIT) {
+                watchAdBtn.disabled = true;
+                watchAdBtn.textContent = "Daily Limit Reached";
+            } else if (!adCooldown) {
+                watchAdBtn.disabled = false;
+                watchAdBtn.textContent = "Watch Ad";
+            }
+        }
+
+        // Notification system
+        function showNotification(message) {
+            notificationEl.textContent = message;
+            notificationEl.classList.add('show');
+            
+            setTimeout(() => {
+                notificationEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // --- Home Section (Tap to Earn) ---
+        
+        tapBtn.addEventListener('click', handleTap);
+        tapCoin.addEventListener('click', handleTap);
+
+        function handleTap() {
+            if (!tapAvailable) return;
+            
+            nbtBalance += TAP_REWARD;
+            updateBalance();
+            
+            showNotification(`${TAP_REWARD} NBT added! See you in 24 hours!`);
+            createCoinPop(TAP_REWARD);
+            
+            tapAvailable = false;
+            lastTapTime = Date.now();
+            updateTapTimer();
+            
+            tapBtn.disabled = true;
+        }
+
+        function createCoinPop(amount) {
+            const pop = document.createElement('div');
+            pop.className = 'coin-pop';
+            pop.textContent = `+${amount}`;
+            pop.style.top = '30%'; 
+            pop.style.left = `${Math.random() * 20 + 40}%`;
+            document.querySelector('.home-bg').appendChild(pop);
+            
+            setTimeout(() => {
+                pop.remove();
+            }, 1000);
+        }
+
+        function updateTapTimer() {
+            const now = Date.now();
+            const timePassed = now - lastTapTime;
+            const fullCooldown = 24 * 60 * 60 * 1000;
+            const timeRemaining = fullCooldown - timePassed;
+            
+            if (timeRemaining <= 0) {
+                tapAvailable = true;
+                tapBtn.disabled = false;
+                countdownEl.textContent = "00:00:00";
+                tapBtn.textContent = "Tap to Get Coins";
+                return;
+            }
+            
+            tapBtn.textContent = "On Cooldown";
+            
+            const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+            
+            countdownEl.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            setTimeout(updateTapTimer, 1000);
+        }
+        
+        // --- Earn Section (GigaPub Ad) ---
+
+        watchAdBtn.addEventListener('click', handleAdWatch);
+
+        function handleAdWatch() {
+            if (adCooldown || dailyAdsWatched >= DAILY_AD_LIMIT) return;
+            
+            // Disable button and start cooldown
+            adCooldown = true;
+            watchAdBtn.disabled = true;
+            watchAdBtn.textContent = "Loading Ad...";
+
+            // Use the GigaPub function
+            if (window.showGiga) {
+                window.showGiga()
+                    .then(() => {
+                        // Success: Ad shown and closed
+                        nbtBalance += AD_REWARD;
+                        dailyAdsWatched++;
+                        dailyAdsEl.textContent = dailyAdsWatched;
+                        updateBalance();
+                        showNotification(`You earned ${AD_REWARD} NBT for watching the ad!`);
+                        startAdCooldown();
+                    })
+                    .catch(e => {
+                        // Error/User closed ad before reward
+                        showNotification("Ad not completed. Please try again.");
+                        startAdCooldown(); 
+                        console.error("GigaPub Error:", e);
+                    });
+            } else {
+                // Fallback for demonstration if GigaPub script fails to load
+                showNotification("Ad network unavailable. Simulating ad watch...");
+                
+                setTimeout(() => {
+                    nbtBalance += AD_REWARD;
+                    dailyAdsWatched++;
+                    dailyAdsEl.textContent = dailyAdsWatched;
+                    updateBalance();
+                    showNotification(`You earned ${AD_REWARD} NBT (Simulated)!`);
+                    startAdCooldown();
+                }, 1000);
+            }
+        }
+        
+        function startAdCooldown() {
+            adCooldown = true;
+            watchAdBtn.disabled = true;
+            
+            let countdown = AD_COOLDOWN_SECONDS;
+            adCooldownDisplayEl.textContent = `${countdown}s`;
+            watchAdBtn.textContent = `Cooldown: ${countdown}s`;
+            
+            const timer = setInterval(() => {
+                countdown--;
+                adCooldownDisplayEl.textContent = `${countdown}s`;
+                watchAdBtn.textContent = `Cooldown: ${countdown}s`;
+                
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    adCooldown = false;
+                    adCooldownDisplayEl.textContent = 'Ready';
+                    
+                    if (dailyAdsWatched < DAILY_AD_LIMIT) {
+                        watchAdBtn.disabled = false;
+                        watchAdBtn.textContent = "Watch Ad";
+                    } else {
+                        watchAdBtn.textContent = "Daily Limit Reached";
+                    }
+                }
+            }, 1000);
+        }
+
+        // --- Task Section ---
+        
+        function renderTasks() {
+            taskListEl.innerHTML = '';
+            TASKS.forEach(task => {
+                const isCompleted = task.status === 'completed';
+                const item = document.createElement('div');
+                item.className = 'task-item';
+                item.innerHTML = `
+                    <div>
+                        ${task.name} <i class="fab fa-telegram-plane" style="color:#0088cc;" title="Telegram Link"></i> <br>
+                        <small style="color: #ccc;">Reward: ${TASK_REWARD} NBT</small>
+                    </div>
+                    <a href="${task.link}" target="_blank" onclick="handleTaskClick(event, ${task.id}, ${isCompleted})">
+                        <span class="task-btn ${isCompleted ? 'completed' : ''}" 
+                                data-task-id="${task.id}" style="${isCompleted ? 'pointer-events: none; cursor: default;' : ''}">
+                            ${isCompleted ? 'Completed' : 'Go & Claim'}
+                        </span>
+                    </a>
+                `;
+                taskListEl.appendChild(item);
+            });
+        }
+        
+        function handleTaskClick(e, taskId, isCompleted) {
+            if (isCompleted) {
+                e.preventDefault();
+                showNotification("You have already completed this task!");
+                return;
+            }
+            
+            // Task is not completed, let the link open but also update the state after a short delay
+            // This simulates the user checking the channel/group
+            
+            // Find the task
+            const task = TASKS.find(t => t.id === taskId);
+            
+            if (task && task.status !== 'completed') {
+                // Prevent immediate claim button click, let them visit the link first
+                
+                // Simulate claim after they click to open the link
+                setTimeout(() => {
+                    // Re-check status in case they click multiple times fast
+                    if (task.status !== 'completed') {
+                        task.status = 'completed';
+                        nbtBalance += TASK_REWARD;
+                        updateBalance();
+                        showNotification(`Task "${task.name}" completed! ${TASK_REWARD} NBT added!`);
+                        renderTasks(); // Re-render to update the button status
+                    }
+                }, 1000); // 1-second delay to simulate minimal 'completion' time
+            }
+        }
+        
+        // Attach the handler to the global scope for the onclick in the generated HTML
+        window.handleTaskClick = handleTaskClick;
+
+        // --- Profile Section ---
+        
+        withdrawBtn.addEventListener('click', () => {
+            showNotification("The **Withdraw** feature, including NBT to USDT conversion, will be available after the Trade feature launch!");
+        });
+
+
+        // --- Initialization ---
+
+        function initialize() {
+            updateBalance();
+            updateTapTimer();
+            renderTasks();
+            
+            // Set initial ad cooldown display
+            adCooldownDisplayEl.textContent = 'Ready';
+        }
+        
+        initialize();
+    </script>
+</body>
+</html>
