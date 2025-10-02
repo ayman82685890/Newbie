@@ -278,25 +278,27 @@
         }
 
         .limits {
-            display: flex;
-            justify-content: space-around;
+            display: grid; /* Changed to grid for better layout control */
+            grid-template-columns: 1fr 1fr 1fr; /* Three columns for Daily, Hourly, Cooldown */
+            gap: 5px;
             margin: 15px 0;
             background: var(--bg-light);
-            padding: 15px;
+            padding: 15px 5px;
             border-radius: 10px;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 400;
         }
         
         .limits div {
             text-align: center;
-            padding: 0 10px;
+            padding: 0 5px;
             flex: 1;
-            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            /* Using a box shadow trick for dividers */
+            box-shadow: 1px 0 0 0 rgba(255, 255, 255, 0.2) inset;
         }
         
-        .limits div:last-child {
-            border-right: none;
+        .limits div:first-child {
+            box-shadow: none; /* Remove left divider for the first element */
         }
 
         /* Task Section */
@@ -509,6 +511,7 @@
                 </div>
                 <div class="limits">
                     <div>Daily Ads: <span id="daily-ads">0</span>/60</div>
+                    <div>Hourly Ads: <span id="hourly-ads">0</span>/20</div>
                     <div>Ad Cooldown: <span id="ad-cooldown-display">Ready</span></div>
                 </div>
                 <button class="ad-btn" id="watch-ad">Watch Ad</button>
@@ -567,16 +570,21 @@
     <script>
         // Global variables and constants
         let nbtBalance = 0;
-        let usdtBalance = 0.00; // USDT is initially 0 as requested
+        let usdtBalance = 0.00; 
         let dailyAdsWatched = 0;
+        let adsWatchedThisHour = 0; // NEW: Track hourly ad count
+        let lastAdHourResetTime = 0; // NEW: Timestamp of last hourly reset
         let lastTapTime = 0;
         let tapAvailable = true;
         let adCooldown = false;
+        
+        const HOUR_IN_MS = 60 * 60 * 1000; // NEW: One hour in milliseconds
         const TAP_REWARD = 20;
         const AD_REWARD = 1;
         const TASK_REWARD = 3;
         const AD_COOLDOWN_SECONDS = 10;
         const DAILY_AD_LIMIT = 60;
+        const HOURLY_AD_LIMIT = 20; // NEW: Set hourly limit to 20
         // Hypothetical conversion rate for display: 1000 NBT = $1
         const NBT_USD_RATE = 1 / 1000; 
         
@@ -599,6 +607,7 @@
         const countdownEl = document.getElementById('countdown');
         const watchAdBtn = document.getElementById('watch-ad');
         const dailyAdsEl = document.getElementById('daily-ads');
+        const hourlyAdsEl = document.getElementById('hourly-ads'); // NEW
         const adCooldownDisplayEl = document.getElementById('ad-cooldown-display');
         const nbtBalanceEl = document.getElementById('nbt-balance');
         const usdBalanceEl = document.getElementById('usd-balance');
@@ -614,9 +623,11 @@
                 nbtBalance: nbtBalance,
                 usdtBalance: usdtBalance,
                 dailyAdsWatched: dailyAdsWatched,
+                adsWatchedThisHour: adsWatchedThisHour, // NEW
+                lastAdHourResetTime: lastAdHourResetTime, // NEW
                 lastTapTime: lastTapTime,
-                adCooldown: adCooldown, // Not strictly necessary, but good practice
-                tasks: TASKS.map(t => ({ id: t.id, status: t.status })) // Save only id and status
+                adCooldown: adCooldown,
+                tasks: TASKS.map(t => ({ id: t.id, status: t.status }))
             };
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -633,6 +644,8 @@
                     nbtBalance = data.nbtBalance || 0;
                     usdtBalance = data.usdtBalance || 0.00;
                     dailyAdsWatched = data.dailyAdsWatched || 0;
+                    adsWatchedThisHour = data.adsWatchedThisHour || 0; // NEW
+                    lastAdHourResetTime = data.lastAdHourResetTime || 0; // NEW
                     lastTapTime = data.lastTapTime || 0;
                     adCooldown = data.adCooldown || false;
 
@@ -648,7 +661,6 @@
                 }
             } catch (e) {
                 console.error("Error loading data from localStorage:", e);
-                // Clear corrupted storage to start fresh
                 localStorage.removeItem(STORAGE_KEY); 
             }
         }
@@ -671,25 +683,60 @@
                         section.classList.add('active');
                     }
                 });
+                
+                // Extra call to update earn display when navigating to it
+                if (sectionId === 'earn') {
+                    updateEarnSectionDisplay();
+                }
             });
         });
 
         // Update Balances
         function updateBalance() {
             nbtBalanceEl.textContent = `${nbtBalance} NBT`;
-            // USD value is for future reference, based on NBT balance (for display only)
             usdBalanceEl.textContent = `$${(nbtBalance * NBT_USD_RATE).toFixed(2)}`;
-            // USDT balance must remain 0.00 until the trade feature is live
             usdtBalanceEl.textContent = `${usdtBalance.toFixed(2)} USDT`;
-            dailyAdsEl.textContent = `${dailyAdsWatched}/60`;
+        }
+        
+        // NEW: Update Earn Section Display (Limits and Button State)
+        function updateEarnSectionDisplay() {
+            updateBalance(); // Update overall balance display
             
-            // Check daily ad limit
+            // Check and reset hourly counter if necessary
+            checkAdLimits();
+
+            dailyAdsEl.textContent = `${dailyAdsWatched}/${DAILY_AD_LIMIT}`;
+            hourlyAdsEl.textContent = `${adsWatchedThisHour}/${HOURLY_AD_LIMIT}`;
+
+            let buttonText = "Watch Ad";
+            let isDisabled = adCooldown;
+            
             if (dailyAdsWatched >= DAILY_AD_LIMIT) {
-                watchAdBtn.disabled = true;
-                watchAdBtn.textContent = "Daily Limit Reached";
-            } else if (!adCooldown) {
-                watchAdBtn.disabled = false;
-                watchAdBtn.textContent = "Watch Ad";
+                isDisabled = true;
+                buttonText = "Daily Limit Reached (60)";
+            } else if (adsWatchedThisHour >= HOURLY_AD_LIMIT) {
+                isDisabled = true;
+                buttonText = "Hourly Limit Reached (20)";
+            } else if (adCooldown) {
+                 buttonText = watchAdBtn.textContent; // Keep existing cooldown text
+            }
+
+            watchAdBtn.disabled = isDisabled;
+            if (!adCooldown || (dailyAdsWatched >= DAILY_AD_LIMIT) || (adsWatchedThisHour >= HOURLY_AD_LIMIT)) {
+                watchAdBtn.textContent = buttonText;
+            }
+        }
+        
+        // NEW: Check and reset hourly ad limit
+        function checkAdLimits() {
+            const now = Date.now();
+            // If the time since the last reset is more than an hour
+            if (now - lastAdHourResetTime >= HOUR_IN_MS) {
+                // Reset hourly count and update the reset time
+                adsWatchedThisHour = 0;
+                lastAdHourResetTime = now;
+                saveData(); // Save the reset
+                // No need to call updateEarnSectionDisplay() here, as it's called after this check
             }
         }
 
@@ -719,9 +766,9 @@
             
             tapAvailable = false;
             lastTapTime = Date.now();
-            saveData(); // Save new balance and tap time
+            saveData(); 
             
-            updateTapTimer(); // Start/update timer display
+            updateTapTimer();
             
             tapBtn.disabled = true;
         }
@@ -750,7 +797,6 @@
                 tapBtn.disabled = false;
                 countdownEl.textContent = "00:00:00";
                 tapBtn.textContent = "Tap to Get Coins";
-                // If it just became available, save the time as 0 to mark reset
                 if (lastTapTime !== 0) {
                     lastTapTime = 0;
                     saveData();
@@ -776,7 +822,12 @@
         watchAdBtn.addEventListener('click', handleAdWatch);
 
         function handleAdWatch() {
-            if (adCooldown || dailyAdsWatched >= DAILY_AD_LIMIT) return;
+            // Check limits again before starting the process
+            checkAdLimits();
+            if (adCooldown || dailyAdsWatched >= DAILY_AD_LIMIT || adsWatchedThisHour >= HOURLY_AD_LIMIT) {
+                updateEarnSectionDisplay(); // Ensure button text is updated if user bypassed a limit
+                return;
+            }
             
             // Disable button and start cooldown
             adCooldown = true;
@@ -790,9 +841,10 @@
                         // Success: Ad shown and closed
                         nbtBalance += AD_REWARD;
                         dailyAdsWatched++;
-                        updateBalance();
+                        adsWatchedThisHour++; // Increment hourly count
+                        updateEarnSectionDisplay();
                         showNotification(`You earned ${AD_REWARD} NBT for watching the ad!`);
-                        saveData(); // Save new balance and ad count
+                        saveData(); 
                         startAdCooldown();
                     })
                     .catch(e => {
@@ -808,9 +860,10 @@
                 setTimeout(() => {
                     nbtBalance += AD_REWARD;
                     dailyAdsWatched++;
-                    updateBalance();
+                    adsWatchedThisHour++; // Increment hourly count
+                    updateEarnSectionDisplay();
                     showNotification(`You earned ${AD_REWARD} NBT (Simulated)!`);
-                    saveData(); // Save new balance and ad count
+                    saveData();
                     startAdCooldown();
                 }, 1000);
             }
@@ -834,13 +887,8 @@
                     adCooldown = false;
                     adCooldownDisplayEl.textContent = 'Ready';
                     
-                    if (dailyAdsWatched < DAILY_AD_LIMIT) {
-                        watchAdBtn.disabled = false;
-                        watchAdBtn.textContent = "Watch Ad";
-                    } else {
-                        watchAdBtn.textContent = "Daily Limit Reached";
-                    }
-                    saveData(); // Save cooldown state reset
+                    updateEarnSectionDisplay(); // Check limits and update button state
+                    saveData(); 
                 }
             }, 1000);
         }
@@ -890,11 +938,11 @@
                         task.status = 'completed';
                         nbtBalance += TASK_REWARD;
                         updateBalance();
-                        saveData(); // Save new balance and task status
+                        saveData(); 
                         showNotification(`Task "${task.name}" completed! ${TASK_REWARD} NBT added!`);
-                        renderTasks(); // Re-render to update the button status
+                        renderTasks(); 
                     }
-                }, 1000); // 1-second delay to simulate minimal 'completion' time
+                }, 1000); 
             }
         }
         
@@ -911,8 +959,8 @@
         // --- Initialization ---
 
         function initialize() {
-            loadData(); // Load saved data first
-            updateBalance();
+            loadData(); 
+            updateEarnSectionDisplay(); // This now updates all balances and earn section limits
             updateTapTimer();
             renderTasks();
             
