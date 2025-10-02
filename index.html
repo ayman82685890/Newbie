@@ -572,19 +572,19 @@
         let nbtBalance = 0;
         let usdtBalance = 0.00; 
         let dailyAdsWatched = 0;
-        let adsWatchedThisHour = 0; // NEW: Track hourly ad count
-        let lastAdHourResetTime = 0; // NEW: Timestamp of last hourly reset
+        let adsWatchedThisHour = 0; 
+        let lastAdHourResetTime = 0; 
         let lastTapTime = 0;
         let tapAvailable = true;
         let adCooldown = false;
         
-        const HOUR_IN_MS = 60 * 60 * 1000; // NEW: One hour in milliseconds
+        const HOUR_IN_MS = 60 * 60 * 1000; 
         const TAP_REWARD = 20;
         const AD_REWARD = 1;
         const TASK_REWARD = 3;
         const AD_COOLDOWN_SECONDS = 10;
         const DAILY_AD_LIMIT = 60;
-        const HOURLY_AD_LIMIT = 20; // NEW: Set hourly limit to 20
+        const HOURLY_AD_LIMIT = 20; // 20 Ads per hour
         // Hypothetical conversion rate for display: 1000 NBT = $1
         const NBT_USD_RATE = 1 / 1000; 
         
@@ -607,7 +607,7 @@
         const countdownEl = document.getElementById('countdown');
         const watchAdBtn = document.getElementById('watch-ad');
         const dailyAdsEl = document.getElementById('daily-ads');
-        const hourlyAdsEl = document.getElementById('hourly-ads'); // NEW
+        const hourlyAdsEl = document.getElementById('hourly-ads');
         const adCooldownDisplayEl = document.getElementById('ad-cooldown-display');
         const nbtBalanceEl = document.getElementById('nbt-balance');
         const usdBalanceEl = document.getElementById('usd-balance');
@@ -616,15 +616,15 @@
         const notificationEl = document.getElementById('notification');
         const taskListEl = document.getElementById('task-list');
 
-        // --- Persistence Functions (New/Modified) ---
+        // --- Persistence Functions ---
 
         function saveData() {
             const data = {
                 nbtBalance: nbtBalance,
                 usdtBalance: usdtBalance,
                 dailyAdsWatched: dailyAdsWatched,
-                adsWatchedThisHour: adsWatchedThisHour, // NEW
-                lastAdHourResetTime: lastAdHourResetTime, // NEW
+                adsWatchedThisHour: adsWatchedThisHour,
+                lastAdHourResetTime: lastAdHourResetTime,
                 lastTapTime: lastTapTime,
                 adCooldown: adCooldown,
                 tasks: TASKS.map(t => ({ id: t.id, status: t.status }))
@@ -644,8 +644,8 @@
                     nbtBalance = data.nbtBalance || 0;
                     usdtBalance = data.usdtBalance || 0.00;
                     dailyAdsWatched = data.dailyAdsWatched || 0;
-                    adsWatchedThisHour = data.adsWatchedThisHour || 0; // NEW
-                    lastAdHourResetTime = data.lastAdHourResetTime || 0; // NEW
+                    adsWatchedThisHour = data.adsWatchedThisHour || 0;
+                    lastAdHourResetTime = data.lastAdHourResetTime || 0;
                     lastTapTime = data.lastTapTime || 0;
                     adCooldown = data.adCooldown || false;
 
@@ -661,6 +661,7 @@
                 }
             } catch (e) {
                 console.error("Error loading data from localStorage:", e);
+                // If data is corrupt, clear it and start fresh
                 localStorage.removeItem(STORAGE_KEY); 
             }
         }
@@ -684,23 +685,23 @@
                     }
                 });
                 
-                // Extra call to update earn display when navigating to it
+                // Update earn display when navigating to it
                 if (sectionId === 'earn') {
                     updateEarnSectionDisplay();
                 }
             });
         });
 
-        // Update Balances
+        // Update Balances (General)
         function updateBalance() {
             nbtBalanceEl.textContent = `${nbtBalance} NBT`;
             usdBalanceEl.textContent = `$${(nbtBalance * NBT_USD_RATE).toFixed(2)}`;
             usdtBalanceEl.textContent = `${usdtBalance.toFixed(2)} USDT`;
         }
         
-        // NEW: Update Earn Section Display (Limits and Button State)
+        // Update Earn Section Display (Limits and Button State)
         function updateEarnSectionDisplay() {
-            updateBalance(); // Update overall balance display
+            updateBalance(); 
             
             // Check and reset hourly counter if necessary
             checkAdLimits();
@@ -713,21 +714,22 @@
             
             if (dailyAdsWatched >= DAILY_AD_LIMIT) {
                 isDisabled = true;
-                buttonText = "Daily Limit Reached (60)";
+                buttonText = `Daily Limit Reached (${DAILY_AD_LIMIT})`;
             } else if (adsWatchedThisHour >= HOURLY_AD_LIMIT) {
                 isDisabled = true;
-                buttonText = "Hourly Limit Reached (20)";
+                buttonText = `Hourly Limit Reached (${HOURLY_AD_LIMIT})`;
             } else if (adCooldown) {
                  buttonText = watchAdBtn.textContent; // Keep existing cooldown text
             }
 
             watchAdBtn.disabled = isDisabled;
-            if (!adCooldown || (dailyAdsWatched >= DAILY_AD_LIMIT) || (adsWatchedThisHour >= HOURLY_AD_LIMIT)) {
+            // Only update button text if it's not currently displaying a cooldown time
+            if (!adCooldown || isDisabled) {
                 watchAdBtn.textContent = buttonText;
             }
         }
         
-        // NEW: Check and reset hourly ad limit
+        // Check and reset hourly ad limit
         function checkAdLimits() {
             const now = Date.now();
             // If the time since the last reset is more than an hour
@@ -735,8 +737,7 @@
                 // Reset hourly count and update the reset time
                 adsWatchedThisHour = 0;
                 lastAdHourResetTime = now;
-                saveData(); // Save the reset
-                // No need to call updateEarnSectionDisplay() here, as it's called after this check
+                saveData(); 
             }
         }
 
@@ -822,10 +823,10 @@
         watchAdBtn.addEventListener('click', handleAdWatch);
 
         function handleAdWatch() {
-            // Check limits again before starting the process
-            checkAdLimits();
+            // CRITICAL STEP: Check limits immediately before starting the ad process
+            checkAdLimits(); 
             if (adCooldown || dailyAdsWatched >= DAILY_AD_LIMIT || adsWatchedThisHour >= HOURLY_AD_LIMIT) {
-                updateEarnSectionDisplay(); // Ensure button text is updated if user bypassed a limit
+                updateEarnSectionDisplay(); 
                 return;
             }
             
@@ -960,7 +961,8 @@
 
         function initialize() {
             loadData(); 
-            updateEarnSectionDisplay(); // This now updates all balances and earn section limits
+            checkAdLimits(); // Call this immediately on load to ensure the hourly count is correct
+            updateEarnSectionDisplay(); 
             updateTapTimer();
             renderTasks();
             
