@@ -580,8 +580,10 @@
         // Hypothetical conversion rate for display: 1000 NBT = $1
         const NBT_USD_RATE = 1 / 1000; 
         
+        const STORAGE_KEY = 'newbieCoinBotData';
+
+        // Base TASKS structure (default if no saved data)
         const TASKS = [
-            // Updated tasks with your provided Telegram links
             { id: 1, name: "Join Telegram Channel 1", link: "https://t.me/NEWBIE540", status: "pending" },
             { id: 2, name: "Join Telegram Channel 2", link: "https://t.me/NewbieBXD", status: "pending" },
             { id: 3, name: "Join Telegram Group 1 (Community)", link: "https://t.me/NEWBIECOMMUNIT", status: "pending" },
@@ -604,6 +606,52 @@
         const withdrawBtn = document.getElementById('withdraw-btn');
         const notificationEl = document.getElementById('notification');
         const taskListEl = document.getElementById('task-list');
+
+        // --- Persistence Functions (New/Modified) ---
+
+        function saveData() {
+            const data = {
+                nbtBalance: nbtBalance,
+                usdtBalance: usdtBalance,
+                dailyAdsWatched: dailyAdsWatched,
+                lastTapTime: lastTapTime,
+                adCooldown: adCooldown, // Not strictly necessary, but good practice
+                tasks: TASKS.map(t => ({ id: t.id, status: t.status })) // Save only id and status
+            };
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            } catch (e) {
+                console.error("Error saving data to localStorage:", e);
+            }
+        }
+
+        function loadData() {
+            try {
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    nbtBalance = data.nbtBalance || 0;
+                    usdtBalance = data.usdtBalance || 0.00;
+                    dailyAdsWatched = data.dailyAdsWatched || 0;
+                    lastTapTime = data.lastTapTime || 0;
+                    adCooldown = data.adCooldown || false;
+
+                    // Load tasks statuses
+                    if (data.tasks && Array.isArray(data.tasks)) {
+                       data.tasks.forEach(savedTask => {
+                           const localTask = TASKS.find(t => t.id === savedTask.id);
+                           if (localTask) {
+                               localTask.status = savedTask.status;
+                           }
+                       });
+                    }
+                }
+            } catch (e) {
+                console.error("Error loading data from localStorage:", e);
+                // Clear corrupted storage to start fresh
+                localStorage.removeItem(STORAGE_KEY); 
+            }
+        }
 
         // --- Core Functions ---
 
@@ -633,6 +681,7 @@
             usdBalanceEl.textContent = `$${(nbtBalance * NBT_USD_RATE).toFixed(2)}`;
             // USDT balance must remain 0.00 until the trade feature is live
             usdtBalanceEl.textContent = `${usdtBalance.toFixed(2)} USDT`;
+            dailyAdsEl.textContent = `${dailyAdsWatched}/60`;
             
             // Check daily ad limit
             if (dailyAdsWatched >= DAILY_AD_LIMIT) {
@@ -670,7 +719,9 @@
             
             tapAvailable = false;
             lastTapTime = Date.now();
-            updateTapTimer();
+            saveData(); // Save new balance and tap time
+            
+            updateTapTimer(); // Start/update timer display
             
             tapBtn.disabled = true;
         }
@@ -690,8 +741,8 @@
 
         function updateTapTimer() {
             const now = Date.now();
-            const timePassed = now - lastTapTime;
             const fullCooldown = 24 * 60 * 60 * 1000;
+            const timePassed = now - lastTapTime;
             const timeRemaining = fullCooldown - timePassed;
             
             if (timeRemaining <= 0) {
@@ -699,9 +750,16 @@
                 tapBtn.disabled = false;
                 countdownEl.textContent = "00:00:00";
                 tapBtn.textContent = "Tap to Get Coins";
+                // If it just became available, save the time as 0 to mark reset
+                if (lastTapTime !== 0) {
+                    lastTapTime = 0;
+                    saveData();
+                }
                 return;
             }
             
+            tapAvailable = false;
+            tapBtn.disabled = true;
             tapBtn.textContent = "On Cooldown";
             
             const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
@@ -732,14 +790,14 @@
                         // Success: Ad shown and closed
                         nbtBalance += AD_REWARD;
                         dailyAdsWatched++;
-                        dailyAdsEl.textContent = dailyAdsWatched;
                         updateBalance();
                         showNotification(`You earned ${AD_REWARD} NBT for watching the ad!`);
+                        saveData(); // Save new balance and ad count
                         startAdCooldown();
                     })
                     .catch(e => {
                         // Error/User closed ad before reward
-                        showNotification("Ad not completed. Please try again.");
+                        showNotification("Ad not completed. Please try again (Simulated Cooldown).");
                         startAdCooldown(); 
                         console.error("GigaPub Error:", e);
                     });
@@ -750,9 +808,9 @@
                 setTimeout(() => {
                     nbtBalance += AD_REWARD;
                     dailyAdsWatched++;
-                    dailyAdsEl.textContent = dailyAdsWatched;
                     updateBalance();
                     showNotification(`You earned ${AD_REWARD} NBT (Simulated)!`);
+                    saveData(); // Save new balance and ad count
                     startAdCooldown();
                 }, 1000);
             }
@@ -782,6 +840,7 @@
                     } else {
                         watchAdBtn.textContent = "Daily Limit Reached";
                     }
+                    saveData(); // Save cooldown state reset
                 }
             }, 1000);
         }
@@ -818,13 +877,11 @@
             }
             
             // Task is not completed, let the link open but also update the state after a short delay
-            // This simulates the user checking the channel/group
             
             // Find the task
             const task = TASKS.find(t => t.id === taskId);
             
             if (task && task.status !== 'completed') {
-                // Prevent immediate claim button click, let them visit the link first
                 
                 // Simulate claim after they click to open the link
                 setTimeout(() => {
@@ -833,6 +890,7 @@
                         task.status = 'completed';
                         nbtBalance += TASK_REWARD;
                         updateBalance();
+                        saveData(); // Save new balance and task status
                         showNotification(`Task "${task.name}" completed! ${TASK_REWARD} NBT added!`);
                         renderTasks(); // Re-render to update the button status
                     }
@@ -853,12 +911,13 @@
         // --- Initialization ---
 
         function initialize() {
+            loadData(); // Load saved data first
             updateBalance();
             updateTapTimer();
             renderTasks();
             
-            // Set initial ad cooldown display
-            adCooldownDisplayEl.textContent = 'Ready';
+            // Set initial ad cooldown display (only needed if adCooldown state was saved)
+            adCooldownDisplayEl.textContent = adCooldown ? '...' : 'Ready';
         }
         
         initialize();
