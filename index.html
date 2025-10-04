@@ -37,10 +37,11 @@
         }
 
         body {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            /* Adjusted background for better mobile/Telegram bot view */
+            background-color: var(--primary-color);
             color: white;
             min-height: 100vh;
-            padding-bottom: 80px; /* Space for the bottom menu */
+            padding-bottom: 80px; 
             position: relative;
         }
 
@@ -48,47 +49,47 @@
             max-width: 500px;
             margin: 0 auto;
             background: var(--bg-dark);
-            border-radius: 20px;
+            border-radius: 0; /* Removing border-radius for full screen effect in Telegram */
             overflow: hidden;
-            box-shadow: var(--shadow-dark);
-            min-height: calc(100vh - 40px);
+            box-shadow: none;
+            min-height: 100vh; /* Changed for better Telegram WebApp fit */
             display: flex;
             flex-direction: column;
         }
 
         header {
             text-align: center;
-            padding: 20px;
+            padding: 15px;
             background: rgba(0, 0, 0, 0.6);
             border-bottom: 2px solid var(--accent-color);
         }
-
+        
         .logo {
-            font-size: 2.8rem;
+            font-size: 2.5rem;
             margin-bottom: 5px;
             text-shadow: 0 0 10px var(--accent-color);
         }
 
         h1 {
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             font-weight: 700;
             letter-spacing: 1px;
         }
 
         .subtitle {
             color: var(--accent-color);
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             font-weight: 300;
         }
 
         .content {
-            padding-bottom: 0; /* Remove bottom padding here */
+            padding-bottom: 0; 
             flex-grow: 1;
         }
 
         .section {
             display: none;
-            padding: 20px; /* Default padding for most sections */
+            padding: 20px; 
             min-height: 100%;
         }
 
@@ -96,14 +97,12 @@
             display: block;
         }
         
-        /* Adjust padding for the trade section */
         #trade {
-            padding: 0; /* Trade section handles its own internal padding */
+            padding: 0;
             background: var(--trade-bg);
             color: var(--text-light);
         }
-
-        /* Bottom Menu Navigation */
+        
         .menu {
             position: fixed;
             bottom: 0;
@@ -121,14 +120,6 @@
             box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.5);
         }
         
-        @media (min-width: 500px) {
-            .menu {
-                border-radius: 0 0 20px 20px;
-                left: unset;
-                right: unset;
-            }
-        }
-
         .menu-btn {
             background: none;
             border: none;
@@ -144,7 +135,7 @@
             font-size: 0.75rem;
             font-weight: 600;
             opacity: 0.7;
-            text-decoration: none; /* Ensure it looks like a button */
+            text-decoration: none; 
         }
         
         .menu-btn i {
@@ -301,8 +292,8 @@
         }
 
         .limits {
-            display: grid; /* Changed to grid for better layout control */
-            grid-template-columns: 1fr 1fr 1fr; /* Three columns for Daily, Hourly, Cooldown */
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr; 
             gap: 5px;
             margin: 15px 0;
             background: var(--bg-light);
@@ -316,12 +307,11 @@
             text-align: center;
             padding: 0 5px;
             flex: 1;
-            /* Using a box shadow trick for dividers */
             box-shadow: 1px 0 0 0 rgba(255, 255, 255, 0.2) inset;
         }
         
         .limits div:first-child {
-            box-shadow: none; /* Remove left divider for the first element */
+            box-shadow: none; 
         }
 
         /* Task Section */
@@ -358,12 +348,12 @@
             cursor: pointer;
             font-weight: 600;
             transition: background 0.3s;
-            text-decoration: none; /* For the <a> tag buttons */
+            text-decoration: none; 
             display: inline-block;
         }
         
         .task-btn.completed {
-            background: #4CAF50; /* Green for completed */
+            background: #4CAF50; 
             cursor: default;
         }
         
@@ -374,9 +364,9 @@
         /* Trade Section - Integrated Styles */
 
         .trade-content-wrapper {
-            /* Ensures trade section content fills the container and respects the bottom menu */
-            height: calc(100vh - 40px - 79px - 20px); /* Total height - container margin - header height - padding/border */
-            max-height: calc(100vh - 40px - 79px - 20px);
+            /* Adjusted for a better fit */
+            height: 100%;
+            max-height: calc(100vh - 70px - 60px); /* Adjusting max-height: Total height - header height - menu height */
             display: flex;
             flex-direction: column;
             overflow-y: auto;
@@ -394,7 +384,6 @@
             font-weight: bold;
             text-align: center;
             margin-bottom: 5px;
-            color: var(--up-color); /* Static Green/Red based on price movement */
         }
 
         .price-usd {
@@ -430,6 +419,7 @@
             background: var(--trade-bg);
             border-bottom: 1px solid var(--trade-border);
             position: relative;
+            overflow: hidden; /* Ensure candles don't overflow */
         }
 
         .candlestick-chart {
@@ -465,6 +455,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             flex-grow: 1;
+            overflow: hidden; /* Prevent content overflow */
         }
 
         .order-section {
@@ -672,14 +663,32 @@
             100% { transform: translateY(-80px) scale(1.8); opacity: 0; }
         }
 
-        /* Empty/Simplified Candlestick Styles */
+        /* IMPROVED CANDLESTICK STYLES - LARGER AND MORE VISIBLE */
         .candlestick {
             position: absolute;
-            width: 5px;
-            background: var(--up-color);
-            border-radius: 1px;
+            width: 15px; /* Wider for better visibility */
+            border-radius: 2px;
+            transition: all 0.5s ease-out;
+            z-index: 5;
+            box-shadow: 0 0 3px rgba(0,0,0,0.5);
+        }
+        
+        /* The thin line part of the candle (wick) */
+        .candlestick::before {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background: inherit;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: -1;
         }
 
+        .candle-up {
+            background: var(--up-color);
+        }
+        
         .candle-down {
             background: var(--down-color);
         }
@@ -692,6 +701,7 @@
             color: var(--text-muted);
             font-size: 0.7rem;
             padding-left: 5px;
+            z-index: 1;
         }
         
         /* Trade History/Order Book Styling */
@@ -719,7 +729,7 @@
             color: var(--down-color);
         }
         
-        /* New Deposit Modal Styles */
+        /* Modal Styles */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -877,10 +887,7 @@
         .text-green { color: var(--up-color); }
         .mt-15 { margin-top: 15px; }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    
     <script data-project-id="3409">
-        // GigaPub Ad script (kept as is)
         !function(){
             var s=document.currentScript,p=s.getAttribute('data-project-id')||'default';
             var d=['https://ad.gigapub.tech','https://ru-ad.gigapub.tech'],i=0,t,sc;
@@ -901,6 +908,8 @@
             l();
         }();
     </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
 </head>
 <body>
     <div class="container">
@@ -950,11 +959,11 @@
             <div class="section" id="trade">
                 <div class="trade-content-wrapper">
                     <div class="trade-header">
-                        <div class="current-price" id="tradeCurrentPrice">0.001500</div>
-                        <div class="price-usd">≈<span id="tradeUsdPrice">0.001500</span> USDT</div>
+                        <div class="current-price" id="tradeCurrentPrice">0.001000</div>
+                        <div class="price-usd">≈<span id="tradeUsdPrice">0.001000</span> USDT</div>
                         <div class="stats-grid">
                             <div class="stat-item">
-                                <div class="stat-label">Price</div>
+                                <div class="stat-label">Symbol</div>
                                 <div class="stat-value">NBT/USDT</div>
                             </div>
                             <div class="stat-item">
@@ -988,7 +997,7 @@
                             </div>
                             <div class="balance-info">
                                 <span>NBT Available:</span>
-                                <span id="tradeNbtBalanceDisplay">200 NBT</span>
+                                <span id="tradeNbtBalanceDisplay">700 NBT</span>
                             </div>
                             
                             <div class="form-group">
@@ -1001,8 +1010,8 @@
                             </div>
                             
                             <div class="balance-info" style="color: var(--accent-color);">
-                                <span>BUY Limit: 100 NBT</span>
-                                <span>SELL Limit: 1000 NBT</span>
+                                <span>Unlimited Trading</span>
+                                <span>No Restrictions</span>
                             </div>
 
                             <div class="trade-buttons">
@@ -1032,8 +1041,8 @@
                 </div>
                 <div class="balance">
                     <h3>Your Balance</h3>
-                    <div class="balance-amount" id="nbt-balance">200 NBT</div>
-                    <div class="usd-info">Future USDT Value (Estimate): <span id="usd-balance">$0.30</span></div>
+                    <div class="balance-amount" id="nbt-balance">700 NBT</div>
+                    <div class="usd-info">Estimated USDT Value: <span id="usd-balance">$0.70</span></div>
                     <div class="balance-amount" id="usdt-balance">0.00 USDT</div>
                     <div class="usd-info">Your **USDT** will be available here after the **Trade** feature launches!</div>
                 </div>
@@ -1116,7 +1125,6 @@
 
     <script>
         // Global variables and constants
-        // MODIFICATION 1: Initial NBT balance changed from 200 to 700 (200 + 500 bonus)
         let nbtBalance = 700; 
         let usdtBalance = 0.00; 
         let dailyAdsWatched = 0;
@@ -1130,31 +1138,30 @@
         const AD_REWARD = 1;
         const TASK_REWARD = 3;
         const AD_COOLDOWN_SECONDS = 10;
-        const DAILY_AD_LIMIT = 60; // Max 60 ads per day
-        const HOURLY_AD_LIMIT = 20; // Max 20 ads per hour
+        const DAILY_AD_LIMIT = 60; 
+        const HOURLY_AD_LIMIT = 20; 
 
-        // MODIFICATION 2 & 3: Trade Limits
-        const TRADE_SELL_LIMIT = 1000; 
-        const TRADE_BUY_LIMIT = 100;
+        // Trade Limits - REMOVED LIMITS
+        const TRADE_SELL_LIMIT = 1000000; // Very high limit (effectively unlimited)
+        const TRADE_BUY_LIMIT = 1000000; // Very high limit (effectively unlimited)
         
-        // --- Deposit Feature Constants ---
+        // Deposit Feature Constants
         const MAX_DEPOSIT_LIMIT = 5000;
         const DEPOSIT_NBT_RATE = 0.0004; // 1 NBT = 0.0004 USDT
         let currentDepositLimit = MAX_DEPOSIT_LIMIT;
         let pendingDepositNBT = 0;
         let pendingDepositUSDT = 0;
-        const DEPOSIT_WALLET_ADDRESS = 'UQByxp7Ac2sg9efCYfd7THLfAIWeGhE1CqJBH4WQU7WPSLzx';
-
-        // Dynamic Price for Trading
-        let NBT_USD_RATE = 0.0010; // Starting with the stable price 
-        const BASE_PRICE = 0.0010; // The fixed reference point for price changes
-        const PRICE_CHANGE_UNIT = 0.000001; // Smallest unit of change
-        const TRADE_VOLUME_THRESHOLD = 50; // Every 50 NBT traded causes a 0.000001 price change
-        let initialDailyPrice = NBT_USD_RATE; // Price at the start of the current 24-hour cycle (for 24h change display)
         
-        const STORAGE_KEY = 'newbieCoinBotData';
+        // Dynamic Price for Trading
+        let NBT_USD_RATE = 0.001000; // Starting with the stable price 
+        const BASE_PRICE = 0.001000; 
+        const PRICE_CHANGE_UNIT = 0.000001; 
+        const TRADE_VOLUME_THRESHOLD = 50; 
+        let initialDailyPrice = NBT_USD_RATE; 
+        
+        const STORAGE_KEY = 'newbieCoinBotDataV2'; // Changed key for a clean start/migration
 
-        // Base TASKS structure (default if no saved data)
+        // Base TASKS structure
         const TASKS = [
             { id: 1, name: "Join Telegram Channel 1", link: "https://t.me/NEWBIE540", status: "pending" },
             { id: 2, name: "Join Telegram Channel 2", link: "https://t.me/NewbieBXD", status: "pending" },
@@ -1164,7 +1171,6 @@
         ];
         
         let savedTaskStatuses = []; 
-
 
         // DOM elements
         const menuBtns = document.querySelectorAll('.menu-btn');
@@ -1184,7 +1190,6 @@
         const notificationEl = document.getElementById('notification');
         const taskListEl = document.getElementById('task-list');
         
-        // Trade DOM elements
         const tradeCurrentPriceEl = document.getElementById('tradeCurrentPrice');
         const tradeUsdPriceEl = document.getElementById('tradeUsdPrice');
         const priceChangeDisplayEl = document.getElementById('priceChangeDisplay');
@@ -1196,7 +1201,6 @@
         const orderBookEl = document.getElementById('orderBook');
         const tradeHistoryEl = document.getElementById('tradeHistory');
         
-        // Deposit Modal DOM elements
         const depositModal = document.getElementById('depositModal');
         const depositNbtAmountInput = document.getElementById('depositNbtAmount');
         const depositUsdtResultEl = document.getElementById('depositUsdtResult');
@@ -1207,12 +1211,8 @@
         const userDepositAddressInput = document.getElementById('userDepositAddress');
         const finalNbtAmountEl = document.getElementById('finalNbtAmount');
 
-
         // --- Persistence Functions ---
 
-        /**
-         * Saves the current game state to LocalStorage.
-         */
         function saveData() {
             const data = {
                 nbtBalance: nbtBalance,
@@ -1225,31 +1225,28 @@
                 nbtUsdRate: NBT_USD_RATE,
                 initialDailyPrice: initialDailyPrice,
                 currentDepositLimit: currentDepositLimit, 
-                // Save only the changeable part of tasks: the status
-                tasks: TASKS.map(t => ({ id: t.id, status: t.status }))
+                tasks: TASKS.map(t => ({ id: t.id, status: t.status })),
+                // Persist trade history for better simulation continuity
+                tradeHistory: simulatedHistory.map(h => ({
+                    type: h.type,
+                    amount: h.amount,
+                    price: h.price,
+                    timestamp: h.timestamp.getTime()
+                }))
             };
             try {
-                // IMPORTANT: This ensures data is saved persistently.
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
             } catch (e) {
                 console.error("Error saving data to localStorage:", e);
-                // Notification to user about saving failure could be added here
             }
         }
 
-        /**
-         * Loads the game state from LocalStorage.
-         * @returns {boolean} True if data was successfully loaded, false otherwise.
-         */
         function loadData() {
             try {
                 const savedData = localStorage.getItem(STORAGE_KEY);
                 if (savedData) {
                     const data = JSON.parse(savedData);
                     
-                    // Load state, using default values if undefined in saved data
-                    // Use Number() for numeric values to ensure correct type after parsing from string
-                    // Note: If data.nbtBalance is defined, it will load the saved value, overriding the 700 default after first run.
                     nbtBalance = Number(data.nbtBalance) !== undefined ? Number(data.nbtBalance) : 700; 
                     usdtBalance = Number(data.usdtBalance) !== undefined ? Number(data.usdtBalance) : 0.00; 
                     dailyAdsWatched = Number(data.dailyAdsWatched) || 0;
@@ -1265,19 +1262,27 @@
                     if (data.tasks && Array.isArray(data.tasks)) {
                        savedTaskStatuses = data.tasks;
                     }
+                    
+                    if (data.tradeHistory && Array.isArray(data.tradeHistory)) {
+                        simulatedHistory.length = 0; // Clear default
+                        data.tradeHistory.forEach(h => {
+                            simulatedHistory.unshift({
+                                type: h.type,
+                                amount: h.amount,
+                                price: h.price,
+                                timestamp: new Date(h.timestamp)
+                            });
+                        });
+                    }
                     return true;
                 }
             } catch (e) {
                 console.error("Error loading data from localStorage:", e);
-                // ** CRITICAL CHANGE: Do NOT remove item or reset, simply return false and let initialize use defaults **
                 return false;
             }
             return false;
         }
         
-        /**
-         * Applies the loaded task statuses to the main TASKS array.
-         */
         function applyTaskStatuses() {
             if (savedTaskStatuses.length > 0) {
                 savedTaskStatuses.forEach(savedTask => {
@@ -1289,7 +1294,7 @@
             }
         }
         
-        // --- Core Functions (rest of the script is largely the same, but simplified for the response) ---
+        // --- Core Functions ---
 
         // Menu navigation
         menuBtns.forEach(btn => {
@@ -1313,18 +1318,23 @@
                 } else if (sectionId === 'profile') {
                     updateDepositSectionDisplay(); 
                 }
+                updateBalance(); // Ensure balance is fresh on every view switch
             });
         });
 
         // Update Balances (General)
         function updateBalance() {
+            // Ensure nbtBalance and usdtBalance are treated as numbers
+            nbtBalance = parseFloat(nbtBalance.toFixed(2));
+            usdtBalance = parseFloat(usdtBalance.toFixed(4)); 
+
             nbtBalanceEl.textContent = `${nbtBalance.toFixed(2)} NBT`;
             usdBalanceEl.textContent = `$${(nbtBalance * NBT_USD_RATE).toFixed(2)}`;
-            usdtBalanceEl.textContent = `${usdtBalance.toFixed(2)} USDT`;
+            usdtBalanceEl.textContent = `${usdtBalance.toFixed(4)} USDT`;
             
             // Also update Trade section balances
             if (tradeUsdtBalanceDisplayEl) {
-                tradeUsdtBalanceDisplayEl.textContent = `${usdtBalance.toFixed(2)} USDT`;
+                tradeUsdtBalanceDisplayEl.textContent = `${usdtBalance.toFixed(4)} USDT`;
             }
             if (tradeNbtBalanceDisplayEl) {
                 tradeNbtBalanceDisplayEl.textContent = `${nbtBalance.toFixed(2)} NBT`;
@@ -1346,10 +1356,10 @@
                 priceChangeDisplayEl.textContent = `${priceDifference >= 0 ? '+' : ''}${percentageChange.toFixed(2)}%`;
                 priceChangeDisplayEl.style.color = color;
             }
-            saveData(); // Save data anytime balances are updated
+            saveData(); 
         }
         
-        // Update Earn Section Display (Limits and Button State)
+        // Update Earn Section Display 
         function updateEarnSectionDisplay() {
             updateBalance(); 
             checkAdLimits();
@@ -1587,7 +1597,7 @@
             showNotification("The **Withdraw** feature, including NBT to USDT conversion, is not yet available in this phase.");
         });
         
-        // --- Deposit Feature Logic (NEW) ---
+        // --- Deposit Feature Logic ---
         
         depositBtn.addEventListener('click', openDepositModal);
 
@@ -1602,17 +1612,15 @@
             } else {
                  depositBtn.textContent = 'Deposit NBT';
             }
-            saveData(); // Save the limit state
+            saveData(); 
         }
         
         function openDepositModal() {
             if (currentDepositLimit <= 0) return;
             
-            // Reset to Stage 1
             document.querySelectorAll('.modal-stage').forEach(stage => stage.classList.remove('active'));
             document.getElementById('deposit-stage-1').classList.add('active');
             
-            // Reset input and calculation
             depositNbtAmountInput.value = '';
             depositUsdtResultEl.textContent = '0.0000';
             userDepositAddressInput.value = '';
@@ -1631,7 +1639,6 @@
         window.calculateDepositUsdt = function() {
             let nbtAmount = parseInt(depositNbtAmountInput.value) || 0;
             
-            // Limit check
             if (nbtAmount > currentDepositLimit) {
                 nbtAmount = currentDepositLimit;
                 depositNbtAmountInput.value = currentDepositLimit;
@@ -1656,7 +1663,6 @@
                     return;
                 }
                 
-                // Update Stage 2 details
                 confirmUsdtAmountEl.textContent = pendingDepositUSDT.toFixed(4);
                 confirmNbtAmountEl.textContent = pendingDepositNBT.toFixed(0);
                 
@@ -1666,7 +1672,7 @@
             } else if (stage === 3) {
                 const userAddress = userDepositAddressInput.value.trim();
                 
-                if (userAddress.length < 10) { // Simple validation for a "valid-looking" address
+                if (userAddress.length < 10) { 
                     showNotification("Please provide your correct Tonkeeper Address.");
                     return;
                 }
@@ -1680,15 +1686,12 @@
         
         window.processDeposit = function() {
             closeDepositModal();
-            // IMPORTANT: Updated simulation time to 30 seconds
             showNotification(`Your ${pendingDepositNBT} NBT deposit request is successful! Tokens will be added within 20 minutes (Simulation: 30 seconds).`); 
             
-            // Simulation of 20-minute (30-second actual) check and add
             setTimeout(() => {
                 nbtBalance += pendingDepositNBT;
                 currentDepositLimit -= pendingDepositNBT;
                 
-                // Reset pending amounts
                 pendingDepositNBT = 0;
                 pendingDepositUSDT = 0;
                 
@@ -1700,14 +1703,13 @@
             }, 30000); // 30 seconds simulation
         }
 
+
         // --- Trade Section Logic (Dynamic Price) ---
         
-        // Function to update the NBT_USD_RATE based on trade volume
         function updatePrice(type, amount) {
             const numChanges = Math.floor(amount / TRADE_VOLUME_THRESHOLD);
             let priceChange = 0;
             
-            // Buy pressure increases price, Sell pressure decreases price
             if (type === 'buy') {
                 priceChange = numChanges * PRICE_CHANGE_UNIT;
             } else if (type === 'sell') {
@@ -1716,9 +1718,8 @@
             
             NBT_USD_RATE += priceChange;
             
-            // Ensure price is always 6 decimal places and doesn't go below a reasonable floor
             NBT_USD_RATE = parseFloat(NBT_USD_RATE.toFixed(6));
-            if (NBT_USD_RATE < 0.0001) { // Set a hard floor
+            if (NBT_USD_RATE < 0.0001) { 
                 NBT_USD_RATE = 0.0001;
             }
             
@@ -1728,14 +1729,11 @@
         
         // Background fluctuation for simulated market
         function startPriceFluctuation() {
-            // Fluctuate every 1 to 5 minutes
             const fluctuationInterval = Math.random() * (300000 - 60000) + 60000; 
-            
-            const randomChange = (Math.random() - 0.5) * PRICE_CHANGE_UNIT * 5; // Change by up to 5 units, up or down
+            const randomChange = (Math.random() - 0.5) * PRICE_CHANGE_UNIT * 5; 
             
             NBT_USD_RATE += randomChange;
             
-            // Keep price somewhat close to the base, with a tolerance (e.g., +/- 0.0005)
             const maxDeviation = 0.0005;
             if (NBT_USD_RATE > BASE_PRICE + maxDeviation) {
                 NBT_USD_RATE -= PRICE_CHANGE_UNIT;
@@ -1747,25 +1745,24 @@
             
             updateTradeDisplay();
             
-            // Call next fluctuation
             setTimeout(startPriceFluctuation, fluctuationInterval);
         }
 
         // Simulated Order Book and History Data
         const simulatedOrders = {
-            bids: [ // Buy orders (price below current)
+            bids: [ 
                 { price: 0, amount: 85231 },
                 { price: 0, amount: 68456 },
                 { price: 0, amount: 48900 }
             ],
-            asks: [ // Sell orders (price above current)
+            asks: [ 
                 { price: 0, amount: 52167 },
                 { price: 0, amount: 39873 },
                 { price: 0, amount: 22500 }
             ],
         };
 
-        const simulatedHistory = [
+        let simulatedHistory = [
             { type: 'buy', amount: 1500, price: BASE_PRICE, timestamp: new Date(Date.now() - 5000) },
             { type: 'sell', amount: 2000, price: BASE_PRICE, timestamp: new Date(Date.now() - 15000) },
             { type: 'buy', amount: 500, price: BASE_PRICE, timestamp: new Date(Date.now() - 30000) },
@@ -1773,21 +1770,20 @@
 
 
         function updateTradeDisplay() {
-            updateBalance(); // Update all balances
-            updateOrderCalculation(); // Update total cost/revenue on the Trade page
+            updateBalance(); 
+            updateOrderCalculation(); 
             renderOrderBook();
             renderTradeHistory();
             renderCandlestickChart();
         }
         
-        // Update order calculation
         function updateOrderCalculation() {
             const amount = parseFloat(orderAmountEl.value) || 0;
             const total = amount * NBT_USD_RATE;
             orderTotalEl.textContent = total.toFixed(6);
         }
 
-        // Handle the Buy/Sell action
+        // --- UNLIMITED TRADE LOGIC ---
         window.handleTrade = function(type) {
             let amount = Math.floor(parseFloat(orderAmountEl.value));
             
@@ -1795,46 +1791,38 @@
                 showNotification('Please enter a valid whole number amount of NBT to trade.');
                 return;
             }
-
-            const cost = amount * NBT_USD_RATE;
+            
+            // REMOVED LIMIT CHECKS - UNLIMITED TRADING
+            const tradeValueUsdt = amount * NBT_USD_RATE;
 
             if (type === 'buy') {
-                // Check Buy Limit
-                if (amount > TRADE_BUY_LIMIT) {
-                    showNotification(`Buy limit exceeded. Maximum buy is ${TRADE_BUY_LIMIT} NBT.`);
-                    amount = TRADE_BUY_LIMIT; // Auto-adjust to max limit for the check
-                }
-
-                if (cost > usdtBalance) {
-                    showNotification(`Insufficient USDT balance. Needed: ${cost.toFixed(6)} USDT.`);
+                // Check if user has enough USDT to buy NBT
+                if (tradeValueUsdt > usdtBalance) {
+                    showNotification(`Insufficient USDT balance. Needed: ${tradeValueUsdt.toFixed(4)} USDT.`);
                     return;
                 }
 
-                usdtBalance -= cost;
+                // Execute Buy: Decrease USDT, Increase NBT
+                usdtBalance -= tradeValueUsdt;
                 nbtBalance += amount;
-                showNotification(`Successfully bought ${amount} NBT for ${cost.toFixed(6)} USDT.`);
-                updatePrice('buy', amount); // Call dynamic price update
+                showNotification(`✅ Successfully bought ${amount} NBT for ${tradeValueUsdt.toFixed(4)} USDT.`);
+                updatePrice('buy', amount); 
 
             } else { // sell
-                 // Check Sell Limit
-                if (amount > TRADE_SELL_LIMIT) {
-                    showNotification(`Sell limit exceeded. Maximum sell is ${TRADE_SELL_LIMIT} NBT.`);
-                    amount = TRADE_SELL_LIMIT; // Auto-adjust to max limit for the check
-                }
-                
+                // Check if user has enough NBT to sell
                 if (amount > nbtBalance) {
                     showNotification(`Insufficient NBT balance. Available: ${nbtBalance.toFixed(2)} NBT.`);
                     return;
                 }
 
-                const revenue = cost; // Same calculation
+                // Execute Sell: Decrease NBT, Increase USDT
                 nbtBalance -= amount;
-                usdtBalance += revenue;
-                showNotification(`Successfully sold ${amount} NBT for ${revenue.toFixed(6)} USDT.`);
-                updatePrice('sell', amount); // Call dynamic price update
+                usdtBalance += tradeValueUsdt;
+                showNotification(`✅ Successfully sold ${amount} NBT for ${tradeValueUsdt.toFixed(4)} USDT.`);
+                updatePrice('sell', amount); 
             }
 
-            // Add trade to history (simulated)
+            // Add trade to history
             simulatedHistory.unshift({ 
                 type: type, 
                 amount: amount, 
@@ -1843,7 +1831,7 @@
             });
 
             // Update all displays and persist data
-            orderAmountEl.value = ''; // Clear input
+            orderAmountEl.value = ''; 
             updateTradeDisplay();
             saveData(); 
         }
@@ -1853,20 +1841,22 @@
             orderAmountEl.addEventListener('input', updateOrderCalculation);
         }
         
-        // Render simplified Candlestick Chart (Function body remains the same)
+        // --- IMPROVED CANDLESTICK CHART - LARGER AND MORE VISIBLE ---
         function renderCandlestickChart() {
             if (!candlestickChartEl) return;
             candlestickChartEl.innerHTML = '';
             
             const chartHeight = candlestickChartEl.clientHeight;
+            const chartWidth = candlestickChartEl.clientWidth;
             const currentPrice = NBT_USD_RATE;
             
-            // Define a visual range around the current price for the chart (e.g., +/- 0.000050)
+            // Define a visual range around the current price for the chart (+/- 0.000050)
             const chartRange = 0.000100; 
             const maxPrice = currentPrice + chartRange / 2;
             const minPrice = currentPrice - chartRange / 2;
             const priceRange = maxPrice - minPrice;
             
+            // Draw simplified price lines
             const pricesToShow = [
                 currentPrice + 0.000020, 
                 currentPrice + 0.000005, 
@@ -1875,43 +1865,48 @@
                 currentPrice - 0.000020
             ];
 
-            // Draw a few simplified price lines
             pricesToShow.forEach(price => {
+                // Check if price is within the calculated chart range
                 if (price < minPrice || price > maxPrice) return;
                 
+                // Calculate position: 0% (bottom) to 100% (top)
                 const normalizedPrice = (price - minPrice) / priceRange;
+                const percentPosition = normalizedPrice * 100;
                 
                 const priceLine = document.createElement('div');
                 priceLine.className = 'price-line';
-                priceLine.style.bottom = (normalizedPrice * 100) + '%';
+                priceLine.style.bottom = percentPosition + '%';
                 priceLine.textContent = price.toFixed(6);
                 
-                // Highlight the current price line
                 if (Math.abs(price - currentPrice) < 0.000001) {
                     priceLine.style.borderTop = '1px solid var(--accent-color)';
                     priceLine.style.color = 'var(--accent-color)';
+                    priceLine.style.zIndex = '10';
                 }
                 
                 candlestickChartEl.appendChild(priceLine);
             });
             
-            // Draw 10 placeholder candles
-            for (let i = 0; i < 10; i++) {
-                // Simulate price movement: last trade history item dictates the trend
-                const lastTrade = simulatedHistory[0] || { type: 'buy' };
-                const isUp = lastTrade.type === 'buy' ? (i % 3 !== 0) : (i % 3 === 0); 
+            // Draw 8 larger, more visible candles
+            for (let i = 0; i < 8; i++) {
+                const isUp = (i % 3 !== 0); 
                 
-                const x = 20 + i * 40;
-                const bodyHeight = Math.random() * 10 + 5; 
-                const offset = (Math.random() - 0.5) * 50;
+                const x = 20 + i * 50; // Adjusted spacing (50px)
+                const bodyHeight = Math.random() * 40 + 20; // Much taller bodies for better visibility
                 
-                // Position the candle around the current price mid-point
+                // Randomly offset the candle's center relative to the current price line
+                const priceOffsetPixels = (Math.random() - 0.5) * 80; // Up to 40px offset
+                
+                // Calculate position of the candle's center based on current price
                 const normalizedCurrent = (currentPrice - minPrice) / priceRange;
-                const midPointY = chartHeight - (normalizedCurrent * chartHeight);
-                const topOffset = midPointY + offset; 
+                const currentPriceY = chartHeight - (normalizedCurrent * chartHeight);
+                const centerPointY = currentPriceY + priceOffsetPixels;
+                
+                // Calculate the candle's top position
+                const topOffset = centerPointY - (bodyHeight / 2); 
                 
                 const candleElement = document.createElement('div');
-                candleElement.className = `candlestick ${isUp ? '' : 'candle-down'}`;
+                candleElement.className = `candlestick ${isUp ? 'candle-up' : 'candle-down'}`;
                 candleElement.style.left = x + 'px';
                 candleElement.style.height = bodyHeight + 'px';
                 candleElement.style.top = topOffset + 'px';
@@ -1920,18 +1915,15 @@
             }
         }
 
-        // Update order book display (Simulated - Function body remains the same)
+        // Update order book display 
         function renderOrderBook() {
             if (!orderBookEl) return;
             orderBookEl.innerHTML = '';
             
-            // Update simulated order prices relative to the current price
             simulatedOrders.asks.forEach((order, index) => {
-                // Asks are above the current price
                 order.price = NBT_USD_RATE + (0.000010 * (index + 1));
             });
             simulatedOrders.bids.forEach((order, index) => {
-                // Bids are below the current price
                 order.price = NBT_USD_RATE - (0.000010 * (index + 1));
             });
 
@@ -1970,11 +1962,14 @@
             });
         }
 
-        // Update trade history (Simulated - Function body remains the same)
+        // Update trade history 
         function renderTradeHistory() {
             if (!tradeHistoryEl) return;
             tradeHistoryEl.innerHTML = '';
             
+            // Only keep the last 50 history entries to prevent memory issues
+            simulatedHistory = simulatedHistory.slice(0, 50);
+
             simulatedHistory.slice(0, 5).forEach(trade => {
                 const historyElement = document.createElement('div');
                 historyElement.className = 'history-row';
@@ -1991,36 +1986,37 @@
         // --- Initialization ---
 
         function initialize() {
-            // Check if LocalStorage is supported before continuing
             if (typeof(Storage) === "undefined") {
                 showNotification("Warning: Local Storage is not supported by your browser. Data will not be saved.");
-                // Set initial values if storage is not available (defaults already set at the top)
             } else {
                 const dataLoaded = loadData();
                 
                 if (dataLoaded) {
                     applyTaskStatuses();
                 } else {
-                     // If no data loaded, the global variables already have the default values, so just save the initial state.
                      saveData(); 
                 }
             }
             
-            // Ensure initialDailyPrice is set for the 24h change calculation (resets daily)
-             if (Date.now() - lastTapTime >= (24 * 60 * 60 * 1000) && lastTapTime !== 0) {
+            // Check if it's a new 24h cycle
+             const fullCooldown = 24 * 60 * 60 * 1000;
+             if (Date.now() - lastTapTime >= fullCooldown && lastTapTime !== 0) {
+                 // Reset 24h price tracking, but only if a full day has passed since last check
                  initialDailyPrice = NBT_USD_RATE;
              }
              
-            saveData(); // Save the initial/corrected state
+            saveData(); 
             
             checkAdLimits(); 
             updateEarnSectionDisplay(); 
             updateDepositSectionDisplay(); 
             
+            // Cooldown check
             if (adCooldown) {
-                // If the app reloads during cooldown, restart the timer
-                // Note: lastAdHourResetTime is actually used to store the last ad watch time in the previous code logic, which is fine for calculating remaining cooldown.
-                const remainingCooldown = AD_COOLDOWN_SECONDS - Math.floor((Date.now() - lastAdHourResetTime) / 1000); 
+                const lastAdTime = lastAdHourResetTime; // Assuming this was set to Date.now() on last ad watch
+                const timePassed = Date.now() - lastAdTime;
+                const remainingCooldown = AD_COOLDOWN_SECONDS - Math.floor(timePassed / 1000); 
+
                 if (remainingCooldown > 0) {
                    startAdCooldown(remainingCooldown);
                 } else {
@@ -2036,10 +2032,10 @@
             updateBalance(); 
             updateTradeDisplay(); 
             
-            // Start price fluctuation simulation
             startPriceFluctuation();
         }
         
+        // Final call to start the application
         initialize();
     </script>
 </body>
