@@ -1,1 +1,2028 @@
-updating 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newbie Coin Bot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a2a6c; /* Dark Blue */
+            --secondary-color: #b21f1f; /* Deep Red */
+            --accent-color: #fdbb2d; /* Gold/Yellow */
+            --bg-dark: rgba(0, 0, 0, 0.85);
+            --bg-light: rgba(255, 255, 255, 0.1);
+            --shadow-dark: 0 5px 20px rgba(0, 0, 0, 0.7);
+            
+            /* Trading View Colors */
+            --trade-bg: #0f172a;
+            --trade-panel-bg: #1e293b;
+            --trade-border: #334155;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+            --up-color: #10b981;
+            --down-color: #ef4444;
+            --accent-blue: #60a5fa;
+            
+            /* Modal Styles */
+            --modal-bg: #1e293b;
+            --modal-overlay: rgba(0, 0, 0, 0.9);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            color: white;
+            min-height: 100vh;
+            padding-bottom: 80px; /* Space for the bottom menu */
+            position: relative;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: var(--bg-dark);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-dark);
+            min-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .logo {
+            font-size: 2.8rem;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px var(--accent-color);
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            font-weight: 300;
+        }
+
+        .content {
+            padding-bottom: 0; /* Remove bottom padding here */
+            flex-grow: 1;
+        }
+
+        .section {
+            display: none;
+            padding: 20px; /* Default padding for most sections */
+            min-height: 100%;
+        }
+
+        .section.active {
+            display: block;
+        }
+        
+        /* Adjust padding for the trade section */
+        #trade {
+            padding: 0; /* Trade section handles its own internal padding */
+            background: var(--trade-bg);
+            color: var(--text-light);
+        }
+
+        /* Bottom Menu Navigation */
+        .menu {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            background: var(--bg-dark);
+            border-top: 1px solid var(--accent-color);
+            z-index: 100;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        @media (min-width: 500px) {
+            .menu {
+                border-radius: 0 0 20px 20px;
+                left: unset;
+                right: unset;
+            }
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px 10px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            opacity: 0.7;
+            text-decoration: none; /* Ensure it looks like a button */
+        }
+        
+        .menu-btn i {
+            font-size: 1.5rem;
+        }
+
+        .menu-btn.active {
+            color: var(--accent-color);
+            background: rgba(253, 187, 45, 0.1);
+            transform: translateY(-2px);
+            opacity: 1;
+        }
+
+        .menu-btn:hover:not(.active) {
+            background: var(--bg-light);
+            opacity: 0.9;
+        }
+
+        /* Shared Section Styles */
+        .section-header-bg {
+            height: 150px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-dark);
+        }
+
+        .section-header-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            z-index: 0;
+        }
+
+        .section-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .section-content h2 {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+
+        /* Home Section */
+        .home-bg {
+            background: url('https://cdn.pixabay.com/photo/2016/08/24/14/29/planet-1617081_1280.jpg') center/cover;
+            height: 250px;
+        }
+
+        .coin {
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle at 30% 30%, var(--accent-color), var(--secondary-color));
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 0 30px var(--accent-color);
+            animation: pulse 2s infinite;
+            transition: transform 0.3s;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .coin:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 20px var(--accent-color); }
+            50% { box-shadow: 0 0 40px var(--accent-color); }
+            100% { box-shadow: 0 0 20px var(--accent-color); }
+        }
+
+        .tap-btn {
+            background: linear-gradient(to right, var(--accent-color), var(--secondary-color));
+            border: none;
+            color: var(--primary-color);
+            font-weight: 700;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s;
+        }
+        
+        .tap-btn:disabled {
+            background: #555;
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .tap-btn:active:not(:disabled) {
+            transform: translateY(3px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .timer {
+            text-align: center;
+            background: var(--bg-light);
+            padding: 12px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Earn Section (GigaPub) */
+        .earn-bg {
+            background: url('https://cdn.pixabay.com/photo/2016/11/15/07/09/photo-manipulation-1825450_1280.jpg') center/cover;
+        }
+
+        .ad-btn {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+
+        .ad-btn:active:not(:disabled) {
+            transform: translateY(3px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .ad-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .limits {
+            display: grid; /* Changed to grid for better layout control */
+            grid-template-columns: 1fr 1fr 1fr; /* Three columns for Daily, Hourly, Cooldown */
+            gap: 5px;
+            margin: 15px 0;
+            background: var(--bg-light);
+            padding: 15px 5px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 400;
+        }
+        
+        .limits div {
+            text-align: center;
+            padding: 0 5px;
+            flex: 1;
+            /* Using a box shadow trick for dividers */
+            box-shadow: 1px 0 0 0 rgba(255, 255, 255, 0.2) inset;
+        }
+        
+        .limits div:first-child {
+            box-shadow: none; /* Remove left divider for the first element */
+        }
+
+        /* Task Section */
+        .task-bg {
+            background: url('https://cdn.pixabay.com/photo/2017/08/30/07/56/notice-board-2696240_1280.jpg') center/cover;
+        }
+
+        .task-list {
+            margin-top: 20px;
+        }
+
+        .task-item {
+            background: var(--bg-light);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .task-btn {
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+            text-decoration: none; /* For the <a> tag buttons */
+            display: inline-block;
+        }
+        
+        .task-btn.completed {
+            background: #4CAF50; /* Green for completed */
+            cursor: default;
+        }
+        
+        .task-btn:hover:not(.completed) {
+            background: #0e1e55;
+        }
+
+        /* Trade Section - Integrated Styles */
+
+        .trade-content-wrapper {
+            /* Ensures trade section content fills the container and respects the bottom menu */
+            height: calc(100vh - 40px - 79px - 20px); /* Total height - container margin - header height - padding/border */
+            max-height: calc(100vh - 40px - 79px - 20px);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .trade-header {
+            background: var(--trade-panel-bg);
+            padding: 15px;
+            border-bottom: 1px solid var(--trade-border);
+        }
+
+        .current-price {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 5px;
+            color: var(--up-color); /* Static Green/Red based on price movement */
+        }
+
+        .price-usd {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+            font-size: 0.8rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            margin-bottom: 3px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+        }
+
+        .chart-container {
+            height: 200px;
+            background: var(--trade-bg);
+            border-bottom: 1px solid var(--trade-border);
+            position: relative;
+        }
+
+        .candlestick-chart {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .trade-tabs {
+            display: flex;
+            background: var(--trade-panel-bg);
+            border-bottom: 1px solid var(--trade-border);
+            padding: 10px 15px;
+            gap: 10px;
+            overflow-x: auto;
+        }
+
+        .trade-tab {
+            padding: 5px 10px;
+            border-radius: 15px;
+            background: var(--trade-border);
+            font-size: 0.8rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .trade-tab.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            flex-grow: 1;
+        }
+
+        .order-section {
+            background: var(--trade-panel-bg);
+            border-right: 1px solid var(--trade-border);
+            padding: 10px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .section-title {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .order-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 0.75rem;
+        }
+
+        .order-price {
+            font-weight: bold;
+        }
+
+        .order-bid .order-price {
+            color: var(--up-color);
+        }
+
+        .order-ask .order-price {
+            color: var(--down-color);
+        }
+        
+        .trading-interface {
+            background: var(--trade-panel-bg);
+            padding: 10px;
+        }
+        
+        .balance-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            background: var(--trade-border);
+            border: 1px solid #475569;
+            border-radius: 5px;
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .trade-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-trade {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-buy {
+            background: linear-gradient(135deg, var(--up-color), #059669);
+            color: white;
+        }
+
+        .btn-sell {
+            background: linear-gradient(135deg, var(--down-color), #dc2626);
+            color: white;
+        }
+
+        /* Profile Section */
+        .profile-bg {
+            background: url('https://cdn.pixabay.com/photo/2017/09/07/08/54/money-2724241_1280.jpg') center/cover;
+        }
+
+        .balance {
+            background: var(--bg-light);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .balance h3 {
+            font-weight: 400;
+            color: #ccc;
+        }
+
+        .balance-amount {
+            font-size: 2.5rem;
+            margin: 10px 0;
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        .usd-info {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-top: 5px;
+            font-weight: 300;
+        }
+
+        .withdraw-btn, .deposit-btn {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+
+        .deposit-btn {
+            background: linear-gradient(to right, var(--up-color), var(--accent-blue));
+            margin-bottom: 0;
+        }
+        
+        .withdraw-btn:active:not(:disabled), .deposit-btn:active:not(:disabled) {
+            transform: translateY(3px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .deposit-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-dark);
+            display: none;
+            z-index: 1000;
+            border-left: 5px solid var(--accent-color);
+            font-weight: 600;
+        }
+
+        .notification.show {
+            display: block;
+            animation: fadeInOut 3s ease-in-out;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+
+        .coin-pop {
+            position: absolute;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px var(--accent-color);
+            animation: popUp 1s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes popUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-80px) scale(1.8); opacity: 0; }
+        }
+
+        /* Empty/Simplified Candlestick Styles */
+        .candlestick {
+            position: absolute;
+            width: 5px;
+            background: var(--up-color);
+            border-radius: 1px;
+        }
+
+        .candle-down {
+            background: var(--down-color);
+        }
+        
+        .price-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            border-top: 1px dashed var(--trade-border);
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            padding-left: 5px;
+        }
+        
+        /* Trade History/Order Book Styling */
+        .history-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 0.75rem;
+        }
+
+        .history-time {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+        }
+
+        .history-price {
+            font-weight: bold;
+        }
+
+        .history-buy {
+            color: var(--up-color);
+        }
+
+        .history-sell {
+            color: var(--down-color);
+        }
+        
+        /* New Deposit Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: var(--modal-overlay);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: var(--modal-bg);
+            margin: 5% auto;
+            padding: 25px;
+            border: 1px solid var(--accent-color);
+            width: 90%;
+            max-width: 400px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-dark);
+            position: relative;
+        }
+
+        .modal-close {
+            color: var(--text-muted);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover,
+        .modal-close:focus {
+            color: var(--secondary-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-header h2 {
+            color: var(--accent-color);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--trade-border);
+            padding-bottom: 10px;
+        }
+
+        .modal-body {
+            font-size: 0.95rem;
+        }
+        
+        .convert-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+        
+        .convert-input-group {
+            margin-bottom: 10px;
+            background: var(--trade-border);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+        }
+        
+        .convert-input-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .convert-input-group input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 0;
+        }
+
+        .convert-input-group input:focus {
+            outline: none;
+        }
+
+        .limit-info {
+            text-align: right;
+            color: var(--accent-blue);
+            font-size: 0.8rem;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .usdt-result {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--up-color);
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .deposit-address-box {
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 0.75rem;
+            word-wrap: break-word;
+            border: 1px dashed var(--accent-color);
+        }
+        
+        .deposit-address-box h4 {
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+        }
+        
+        .next-btn, .cancel-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .next-btn {
+            background: var(--up-color);
+            color: white;
+        }
+        
+        .cancel-btn {
+            background: var(--down-color);
+            color: white;
+        }
+        
+        .modal-stage {
+            display: none;
+        }
+        
+        .modal-stage.active {
+            display: block;
+        }
+        
+        /* Utility */
+        .text-center { text-align: center; }
+        .text-sm { font-size: 0.8rem; }
+        .text-red { color: var(--down-color); }
+        .text-green { color: var(--up-color); }
+        .mt-15 { margin-top: 15px; }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <script data-project-id="3409">
+        // GigaPub Ad script (kept as is)
+        !function(){
+            var s=document.currentScript,p=s.getAttribute('data-project-id')||'default';
+            var d=['https://ad.gigapub.tech','https://ru-ad.gigapub.tech'],i=0,t,sc;
+            function l(){
+                sc=document.createElement('script');
+                sc.async=true;
+                sc.src=d[i]+'/script?id='+p;
+                clearTimeout(t);
+                t=setTimeout(function(){
+                    sc.onload=sc.onerror=null;
+                    sc.src='';
+                    if(++i<d.length)l();
+                },15000);
+                sc.onload=function(){clearTimeout(t)};
+                sc.onerror=function(){clearTimeout(t);if(++i<d.length)l()};
+                document.head.appendChild(sc);
+            }
+            l();
+        }();
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">⭐</div>
+            <h1>Newbie Coin Bot</h1>
+            <p class="subtitle">Tap, Earn, and Trade NBT tokens!</p>
+        </header>
+
+        <div class="content">
+            <div class="section active" id="home">
+                <div class="section-header-bg home-bg">
+                    <div class="coin" id="tap-coin">NBT</div>
+                </div>
+                <button class="tap-btn" id="tap-btn">Tap to Get Coins</button>
+                <div class="timer" id="timer">
+                    Next tap available in: <span id="countdown">24:00:00</span>
+                </div>
+            </div>
+
+            <div class="section" id="earn">
+                <div class="section-header-bg earn-bg">
+                    <div class="section-content">
+                        <h2>Watch & Earn</h2>
+                        <p>Watch a short ad to earn <span id="ad-reward-amount">1</span> NBT token!</p>
+                    </div>
+                </div>
+                <div class="limits">
+                    <div>Daily Ads: <span id="daily-ads">0</span>/60</div>
+                    <div>Hourly Ads: <span id="hourly-ads">0</span>/20</div>
+                    <div>Ad Cooldown: <span id="ad-cooldown-display">Ready</span></div>
+                </div>
+                <button class="ad-btn" id="watch-ad">Watch Ad</button>
+            </div>
+
+            <div class="section" id="task">
+                <div class="section-header-bg task-bg">
+                    <div class="section-content">
+                        <h2>🚀 Complete Tasks</h2>
+                        <p>Complete social media tasks for easy NBT!</p>
+                    </div>
+                </div>
+                <div class="task-list" id="task-list">
+                    </div>
+            </div>
+
+            <div class="section" id="trade">
+                <div class="trade-content-wrapper">
+                    <div class="trade-header">
+                        <div class="current-price" id="tradeCurrentPrice">0.001500</div>
+                        <div class="price-usd">≈<span id="tradeUsdPrice">0.001500</span> USDT</div>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">Price</div>
+                                <div class="stat-value">NBT/USDT</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">24h Change</div>
+                                <div class="stat-value" id="priceChangeDisplay" style="color: var(--up-color);">+0.00%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="trade-tabs">
+                        <div class="trade-tab active">1D</div>
+                        <div class="trade-tab">1W</div>
+                        <div class="trade-tab">1M</div>
+                        <div class="trade-tab">3M</div>
+                        <div class="trade-tab">6M</div>
+                        <div class="trade-tab">All</div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="candlestick-chart" id="candlestickChart">
+                            </div>
+                    </div>
+
+                    <div class="main-content">
+                        <div class="trading-interface">
+                            <div class="section-title">Trade NBT</div>
+                            
+                            <div class="balance-info">
+                                <span>USDT Available:</span>
+                                <span id="tradeUsdtBalanceDisplay">0.00 USDT</span>
+                            </div>
+                            <div class="balance-info">
+                                <span>NBT Available:</span>
+                                <span id="tradeNbtBalanceDisplay">200 NBT</span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="orderAmount">Amount (NBT)</label>
+                                <input type="number" id="orderAmount" placeholder="0.00" min="0" step="1">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Total Cost: <span id="orderTotal">0.000000</span> USDT</label>
+                            </div>
+
+                            <div class="trade-buttons">
+                                <button class="btn-trade btn-buy" onclick="handleTrade('buy')">BUY NBT</button>
+                                <button class="btn-trade btn-sell" onclick="handleTrade('sell')">SELL NBT</button>
+                            </div>
+                        </div>
+
+                        <div class="order-section">
+                            <div class="section-title">Order Book (Simulated)</div>
+                            <div class="order-book" id="orderBook">
+                                </div>
+                            <div class="section-title" style="margin-top: 15px;">Trade History (Simulated)</div>
+                            <div class="trade-history" id="tradeHistory">
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="profile">
+                <div class="section-header-bg profile-bg">
+                    <div class="section-content">
+                        <h2>💰 Your Wallet</h2>
+                        <p>Manage your NBT tokens and future earnings.</p>
+                    </div>
+                </div>
+                <div class="balance">
+                    <h3>Your Balance</h3>
+                    <div class="balance-amount" id="nbt-balance">200 NBT</div>
+                    <div class="usd-info">Future USDT Value (Estimate): <span id="usd-balance">$0.30</span></div>
+                    <div class="balance-amount" id="usdt-balance">0.00 USDT</div>
+                    <div class="usd-info">Your **USDT** will be available here after the **Trade** feature launches!</div>
+                </div>
+                
+                <button class="deposit-btn" id="deposit-btn">Deposit NBT</button>
+                <button class="withdraw-btn" id="withdraw-btn">Withdraw NBT/USDT</button>
+                
+                </div>
+        </div>
+        
+        <div class="menu">
+            <button class="menu-btn active" data-section="home"><i class="fas fa-home"></i>Home</button>
+            <button class="menu-btn" data-section="earn"><i class="fas fa-video"></i>Earn</button>
+            <button class="menu-btn" data-section="task"><i class="fas fa-clipboard-list"></i>Tasks</button>
+            <button class="menu-btn" data-section="trade"><i class="fas fa-chart-line"></i>Trade</button>
+            <button class="menu-btn" data-section="profile"><i class="fas fa-user-circle"></i>Profile</button>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+    
+    <div id="depositModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeDepositModal()">&times;</span>
+            <div class="modal-header">
+                <h2>Buy NBT Tokens (Deposit)</h2>
+            </div>
+            
+            <div id="deposit-stage-1" class="modal-stage active">
+                <p class="text-sm">Current Buy Rate: <span class="text-green">1 NBT = 0.0004 USDT</span></p>
+                <p class="limit-info">Remaining Deposit Limit: <span id="deposit-limit-display">5000</span> NBT</p>
+
+                <div class="convert-input-group">
+                    <label for="depositNbtAmount">NBT Token Amount (Max: <span id="maxNbtInput">5000</span>)</label>
+                    <input type="number" id="depositNbtAmount" placeholder="0" min="1" step="1" oninput="calculateDepositUsdt()">
+                </div>
+                
+                <div class="usdt-result">
+                    <span id="depositUsdtResult">0.0000</span> USDT
+                </div>
+                
+                <button class="next-btn" onclick="nextDepositStage(2)">Next</button>
+            </div>
+            
+            <div id="deposit-stage-2" class="modal-stage">
+                <p>Please send the required USDT to the address below using **Tonkeeper/TON network**.</p>
+                
+                <div class="text-center mt-15">
+                    <p class="text-sm">Amount to Send:</p>
+                    <p class="usdt-result text-green"><span id="confirmUsdtAmount">0.0000</span> USDT</p>
+                    <p class="text-sm">For: <span id="confirmNbtAmount">0</span> NBT</p>
+                </div>
+                
+                <div class="deposit-address-box">
+                    <h4>Recipient Address (USDT TON):</h4>
+                    <span id="deposit-wallet-address">UQByxp7Ac2sg9efCYfd7THLfAIWeGhE1CqJBH4WQU7WPSLzx</span>
+                </div>
+                
+                <div class="convert-input-group mt-15">
+                    <label for="userDepositAddress">Your Deposit Address (Sent from)</label>
+                    <input type="text" id="userDepositAddress" placeholder="Enter your Tonkeeper Address here" required>
+                </div>
+                
+                <p class="text-red text-sm mt-15">**IMPORTANT:** Providing incorrect information or not sending USDT will lead to your ID being banned in the future.</p>
+                
+                <button class="next-btn" onclick="nextDepositStage(3)">Next (Confirm)</button>
+                <button class="cancel-btn" onclick="closeDepositModal()">Cancel</button>
+            </div>
+            
+            <div id="deposit-stage-3" class="modal-stage">
+                <div class="text-center">
+                    <i class="fas fa-check-circle text-green" style="font-size: 3rem;"></i>
+                    <h3 class="mt-15">Confirmation Received!</h3>
+                </div>
+                <p class="mt-15">You have ordered <span class="text-green" id="finalNbtAmount">0</span> tokens. We will check your request and credit the tokens to your account within **20 minutes** (Simulation: 30 seconds).</p>
+                <button class="next-btn" onclick="processDeposit()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables and constants
+        let nbtBalance = 200; 
+        let usdtBalance = 0.00; 
+        let dailyAdsWatched = 0;
+        let adsWatchedThisHour = 0; 
+        let lastAdHourResetTime = 0; 
+        let lastTapTime = 0;
+        let adCooldown = false;
+        
+        const HOUR_IN_MS = 60 * 60 * 1000; 
+        const TAP_REWARD = 20;
+        const AD_REWARD = 1;
+        const TASK_REWARD = 3;
+        const AD_COOLDOWN_SECONDS = 10;
+        const DAILY_AD_LIMIT = 60; // Max 60 ads per day
+        const HOURLY_AD_LIMIT = 20; // Max 20 ads per hour
+        
+        // --- Deposit Feature Constants ---
+        const MAX_DEPOSIT_LIMIT = 5000;
+        const DEPOSIT_NBT_RATE = 0.0004; // 1 NBT = 0.0004 USDT
+        let currentDepositLimit = MAX_DEPOSIT_LIMIT;
+        let pendingDepositNBT = 0;
+        let pendingDepositUSDT = 0;
+        const DEPOSIT_WALLET_ADDRESS = 'UQByxp7Ac2sg9efCYfd7THLfAIWeGhE1CqJBH4WQU7WPSLzx';
+
+        // Dynamic Price for Trading
+        let NBT_USD_RATE = 0.0010; // Starting with the stable price 
+        const BASE_PRICE = 0.0010; // The fixed reference point for price changes
+        const PRICE_CHANGE_UNIT = 0.000001; // Smallest unit of change
+        const TRADE_VOLUME_THRESHOLD = 50; // Every 50 NBT traded causes a 0.000001 price change
+        let initialDailyPrice = NBT_USD_RATE; // Price at the start of the current 24-hour cycle (for 24h change display)
+        
+        const STORAGE_KEY = 'newbieCoinBotData';
+
+        // Base TASKS structure (default if no saved data)
+        const TASKS = [
+            { id: 1, name: "Join Telegram Channel 1", link: "https://t.me/NEWBIE540", status: "pending" },
+            { id: 2, name: "Join Telegram Channel 2", link: "https://t.me/NewbieBXD", status: "pending" },
+            { id: 3, name: "Join Telegram Group 1 (Community)", link: "https://t.me/NEWBIECOMMUNIT", status: "pending" },
+            { id: 4, name: "Join Telegram Group 2", link: "https://t.me/NWEBIE67", status: "pending" },
+            { id: 5, name: "Follow on Twitter", link: "https://twitter.com/newbiecoin_placeholder", status: "pending" }
+        ];
+        
+        let savedTaskStatuses = []; 
+
+
+        // DOM elements
+        const menuBtns = document.querySelectorAll('.menu-btn');
+        const sections = document.querySelectorAll('.section');
+        const tapBtn = document.getElementById('tap-btn');
+        const tapCoin = document.getElementById('tap-coin');
+        const countdownEl = document.getElementById('countdown');
+        const watchAdBtn = document.getElementById('watch-ad');
+        const dailyAdsEl = document.getElementById('daily-ads');
+        const hourlyAdsEl = document.getElementById('hourly-ads');
+        const adCooldownDisplayEl = document.getElementById('ad-cooldown-display');
+        const nbtBalanceEl = document.getElementById('nbt-balance');
+        const usdBalanceEl = document.getElementById('usd-balance');
+        const usdtBalanceEl = document.getElementById('usdt-balance');
+        const withdrawBtn = document.getElementById('withdraw-btn');
+        const depositBtn = document.getElementById('deposit-btn'); 
+        const notificationEl = document.getElementById('notification');
+        const taskListEl = document.getElementById('task-list');
+        
+        // Trade DOM elements
+        const tradeCurrentPriceEl = document.getElementById('tradeCurrentPrice');
+        const tradeUsdPriceEl = document.getElementById('tradeUsdPrice');
+        const priceChangeDisplayEl = document.getElementById('priceChangeDisplay');
+        const tradeUsdtBalanceDisplayEl = document.getElementById('tradeUsdtBalanceDisplay');
+        const tradeNbtBalanceDisplayEl = document.getElementById('tradeNbtBalanceDisplay');
+        const orderAmountEl = document.getElementById('orderAmount');
+        const orderTotalEl = document.getElementById('orderTotal');
+        const candlestickChartEl = document.getElementById('candlestickChart');
+        const orderBookEl = document.getElementById('orderBook');
+        const tradeHistoryEl = document.getElementById('tradeHistory');
+        
+        // Deposit Modal DOM elements
+        const depositModal = document.getElementById('depositModal');
+        const depositNbtAmountInput = document.getElementById('depositNbtAmount');
+        const depositUsdtResultEl = document.getElementById('depositUsdtResult');
+        const depositLimitDisplayEl = document.getElementById('deposit-limit-display');
+        const maxNbtInputEl = document.getElementById('maxNbtInput');
+        const confirmUsdtAmountEl = document.getElementById('confirmUsdtAmount');
+        const confirmNbtAmountEl = document.getElementById('confirmNbtAmount');
+        const userDepositAddressInput = document.getElementById('userDepositAddress');
+        const finalNbtAmountEl = document.getElementById('finalNbtAmount');
+
+
+        // --- Persistence Functions ---
+
+        /**
+         * Saves the current game state to LocalStorage.
+         */
+        function saveData() {
+            const data = {
+                nbtBalance: nbtBalance,
+                usdtBalance: usdtBalance,
+                dailyAdsWatched: dailyAdsWatched,
+                adsWatchedThisHour: adsWatchedThisHour,
+                lastAdHourResetTime: lastAdHourResetTime,
+                lastTapTime: lastTapTime,
+                adCooldown: adCooldown,
+                nbtUsdRate: NBT_USD_RATE,
+                initialDailyPrice: initialDailyPrice,
+                currentDepositLimit: currentDepositLimit, 
+                // Save only the changeable part of tasks: the status
+                tasks: TASKS.map(t => ({ id: t.id, status: t.status }))
+            };
+            try {
+                // IMPORTANT: This ensures data is saved persistently.
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            } catch (e) {
+                console.error("Error saving data to localStorage:", e);
+                // Notification to user about saving failure could be added here
+            }
+        }
+
+        /**
+         * Loads the game state from LocalStorage.
+         * @returns {boolean} True if data was successfully loaded, false otherwise.
+         */
+        function loadData() {
+            try {
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    
+                    // Load state, using default values if undefined in saved data
+                    // Use Number() for numeric values to ensure correct type after parsing from string
+                    nbtBalance = Number(data.nbtBalance) !== undefined ? Number(data.nbtBalance) : 200; 
+                    usdtBalance = Number(data.usdtBalance) !== undefined ? Number(data.usdtBalance) : 0.00; 
+                    dailyAdsWatched = Number(data.dailyAdsWatched) || 0;
+                    adsWatchedThisHour = Number(data.adsWatchedThisHour) || 0;
+                    lastAdHourResetTime = Number(data.lastAdHourResetTime) || 0;
+                    lastTapTime = Number(data.lastTapTime) || 0;
+                    adCooldown = data.adCooldown || false;
+                    
+                    NBT_USD_RATE = Number(data.nbtUsdRate) !== undefined ? Number(data.nbtUsdRate) : BASE_PRICE;
+                    initialDailyPrice = Number(data.initialDailyPrice) !== undefined ? Number(data.initialDailyPrice) : BASE_PRICE;
+                    currentDepositLimit = Number(data.currentDepositLimit) !== undefined ? Number(data.currentDepositLimit) : MAX_DEPOSIT_LIMIT; 
+
+                    if (data.tasks && Array.isArray(data.tasks)) {
+                       savedTaskStatuses = data.tasks;
+                    }
+                    return true;
+                }
+            } catch (e) {
+                console.error("Error loading data from localStorage:", e);
+                // ** CRITICAL CHANGE: Do NOT remove item or reset, simply return false and let initialize use defaults **
+                return false;
+            }
+            return false;
+        }
+        
+        /**
+         * Applies the loaded task statuses to the main TASKS array.
+         */
+        function applyTaskStatuses() {
+            if (savedTaskStatuses.length > 0) {
+                savedTaskStatuses.forEach(savedTask => {
+                    const localTask = TASKS.find(t => t.id === savedTask.id);
+                    if (localTask) {
+                        localTask.status = savedTask.status;
+                    }
+                });
+            }
+        }
+        
+        // ** REMOVED: resetAndInitialize function is gone to ensure data is never lost. **
+
+
+        // --- Core Functions (rest of the script is largely the same, but simplified for the response) ---
+
+        // Menu navigation
+        menuBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sectionId = btn.getAttribute('data-section');
+                
+                menuBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                sections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === sectionId) {
+                        section.classList.add('active');
+                    }
+                });
+                
+                if (sectionId === 'earn') {
+                    updateEarnSectionDisplay();
+                } else if (sectionId === 'trade') {
+                    updateTradeDisplay(); 
+                } else if (sectionId === 'profile') {
+                    updateDepositSectionDisplay(); 
+                }
+            });
+        });
+
+        // Update Balances (General)
+        function updateBalance() {
+            nbtBalanceEl.textContent = `${nbtBalance.toFixed(2)} NBT`;
+            usdBalanceEl.textContent = `$${(nbtBalance * NBT_USD_RATE).toFixed(2)}`;
+            usdtBalanceEl.textContent = `${usdtBalance.toFixed(2)} USDT`;
+            
+            // Also update Trade section balances
+            if (tradeUsdtBalanceDisplayEl) {
+                tradeUsdtBalanceDisplayEl.textContent = `${usdtBalance.toFixed(2)} USDT`;
+            }
+            if (tradeNbtBalanceDisplayEl) {
+                tradeNbtBalanceDisplayEl.textContent = `${nbtBalance.toFixed(2)} NBT`;
+            }
+
+            // Also update Trade Price Display
+            const priceDifference = NBT_USD_RATE - initialDailyPrice;
+            const percentageChange = (priceDifference / initialDailyPrice) * 100;
+            const color = priceDifference >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+            
+            if (tradeCurrentPriceEl) {
+                tradeCurrentPriceEl.textContent = NBT_USD_RATE.toFixed(6);
+                tradeCurrentPriceEl.style.color = color;
+            }
+            if (tradeUsdPriceEl) {
+                tradeUsdPriceEl.textContent = NBT_USD_RATE.toFixed(6);
+            }
+            if (priceChangeDisplayEl) {
+                priceChangeDisplayEl.textContent = `${priceDifference >= 0 ? '+' : ''}${percentageChange.toFixed(2)}%`;
+                priceChangeDisplayEl.style.color = color;
+            }
+            saveData(); // Save data anytime balances are updated
+        }
+        
+        // Update Earn Section Display (Limits and Button State)
+        function updateEarnSectionDisplay() {
+            updateBalance(); 
+            checkAdLimits();
+
+            dailyAdsEl.textContent = `${dailyAdsWatched}/${DAILY_AD_LIMIT}`;
+            hourlyAdsEl.textContent = `${adsWatchedThisHour}/${HOURLY_AD_LIMIT}`;
+
+            let buttonText = "Watch Ad";
+            let isDisabled = adCooldown;
+            
+            if (dailyAdsWatched >= DAILY_AD_LIMIT) {
+                isDisabled = true;
+                buttonText = `Daily Limit Reached (${DAILY_AD_LIMIT})`;
+            } else if (adsWatchedThisHour >= HOURLY_AD_LIMIT) {
+                isDisabled = true;
+                buttonText = `Hourly Limit Reached (${HOURLY_AD_LIMIT})`;
+            } else if (adCooldown) {
+                 buttonText = watchAdBtn.textContent; 
+            }
+
+            watchAdBtn.disabled = isDisabled;
+            if (!adCooldown || isDisabled) {
+                watchAdBtn.textContent = buttonText;
+            }
+        }
+        
+        // Check and reset hourly ad limit
+        function checkAdLimits() {
+            const now = Date.now();
+            if (now - lastAdHourResetTime >= HOUR_IN_MS) {
+                adsWatchedThisHour = 0;
+                lastAdHourResetTime = now;
+                saveData(); 
+            }
+        }
+
+        // Notification system
+        function showNotification(message) {
+            notificationEl.innerHTML = message;
+            notificationEl.classList.add('show');
+            
+            setTimeout(() => {
+                notificationEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // --- Home Section (Tap to Earn) ---
+        
+        tapBtn.addEventListener('click', handleTap);
+        tapCoin.addEventListener('click', handleTap);
+
+        function handleTap() {
+            const fullCooldown = 24 * 60 * 60 * 1000;
+            const timePassed = Date.now() - lastTapTime;
+            if (timePassed < fullCooldown) return;
+
+            nbtBalance += TAP_REWARD;
+            updateBalance();
+            
+            showNotification(`${TAP_REWARD} NBT added! See you in 24 hours!`);
+            createCoinPop(TAP_REWARD);
+            
+            lastTapTime = Date.now();
+            saveData(); 
+            
+            updateTapTimer();
+        }
+
+        function createCoinPop(amount) {
+            const pop = document.createElement('div');
+            pop.className = 'coin-pop';
+            pop.textContent = `+${amount}`;
+            pop.style.top = '30%'; 
+            pop.style.left = `${Math.random() * 20 + 40}%`;
+            document.querySelector('.home-bg').appendChild(pop);
+            
+            setTimeout(() => {
+                pop.remove();
+            }, 1000);
+        }
+
+        function updateTapTimer() {
+            const now = Date.now();
+            const fullCooldown = 24 * 60 * 60 * 1000;
+            const timePassed = now - lastTapTime;
+            const timeRemaining = fullCooldown - timePassed;
+            
+            if (timeRemaining <= 0) {
+                tapBtn.disabled = false;
+                countdownEl.textContent = "00:00:00";
+                tapBtn.textContent = "Tap to Get Coins";
+                return;
+            }
+            
+            tapBtn.disabled = true;
+            tapBtn.textContent = "On Cooldown";
+            
+            const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+            
+            countdownEl.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            setTimeout(updateTapTimer, 1000);
+        }
+        
+        // --- Earn Section (GigaPub Ad) ---
+
+        watchAdBtn.addEventListener('click', handleAdWatch);
+
+        function handleAdWatch() {
+            checkAdLimits(); 
+            if (adCooldown || dailyAdsWatched >= DAILY_AD_LIMIT || adsWatchedThisHour >= HOURLY_AD_LIMIT) {
+                updateEarnSectionDisplay(); 
+                return;
+            }
+            
+            adCooldown = true;
+            watchAdBtn.disabled = true;
+            watchAdBtn.textContent = "Loading Ad...";
+
+            if (window.showGiga) {
+                window.showGiga()
+                    .then(() => {
+                        nbtBalance += AD_REWARD;
+                        dailyAdsWatched++;
+                        adsWatchedThisHour++;
+                        updateEarnSectionDisplay();
+                        showNotification(`You earned ${AD_REWARD} NBT for watching the ad!`);
+                        saveData(); 
+                        startAdCooldown();
+                    })
+                    .catch(e => {
+                        showNotification("Ad not completed. Please try again (Simulated Cooldown).");
+                        startAdCooldown(); 
+                        console.error("GigaPub Error:", e);
+                    });
+            } else {
+                showNotification("Ad network unavailable. Simulating ad watch...");
+                
+                setTimeout(() => {
+                    nbtBalance += AD_REWARD;
+                    dailyAdsWatched++;
+                    adsWatchedThisHour++;
+                    updateEarnSectionDisplay();
+                    showNotification(`You earned ${AD_REWARD} NBT (Simulated)!`);
+                    saveData();
+                    startAdCooldown();
+                }, 1000);
+            }
+        }
+        
+        function startAdCooldown(initialCooldown = AD_COOLDOWN_SECONDS) {
+            adCooldown = true;
+            watchAdBtn.disabled = true;
+            
+            let countdown = initialCooldown;
+            
+            if (watchAdBtn.dataset.timerId) {
+                clearInterval(watchAdBtn.dataset.timerId);
+            }
+
+            const timer = setInterval(() => {
+                countdown--;
+                adCooldownDisplayEl.textContent = `${countdown}s`;
+                watchAdBtn.textContent = `Cooldown: ${countdown}s`;
+                
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    delete watchAdBtn.dataset.timerId;
+                    adCooldown = false;
+                    adCooldownDisplayEl.textContent = 'Ready';
+                    
+                    updateEarnSectionDisplay(); 
+                    saveData(); 
+                }
+            }, 1000);
+            
+            watchAdBtn.dataset.timerId = timer;
+        }
+        
+        // --- Task Section ---
+        
+        function renderTasks() {
+            taskListEl.innerHTML = '';
+            TASKS.forEach(task => {
+                const isCompleted = task.status === 'completed';
+                const item = document.createElement('div');
+                item.className = 'task-item';
+                item.innerHTML = `
+                    <div>
+                        ${task.name} <i class="fab fa-telegram-plane" style="color:#0088cc;" title="Telegram Link"></i> <br>
+                        <small style="color: #ccc;">Reward: ${TASK_REWARD} NBT</small>
+                    </div>
+                    <a href="${task.link}" target="_blank" onclick="handleTaskClick(event, ${task.id}, ${isCompleted})">
+                        <span class="task-btn ${isCompleted ? 'completed' : ''}" 
+                                data-task-id="${task.id}" style="${isCompleted ? 'pointer-events: none; cursor: default;' : ''}">
+                            ${isCompleted ? 'Completed' : 'Go & Claim'}
+                        </span>
+                    </a>
+                `;
+                taskListEl.appendChild(item);
+            });
+        }
+        
+        function handleTaskClick(e, taskId, isCompleted) {
+            if (isCompleted) {
+                e.preventDefault();
+                showNotification("You have already completed this task!");
+                return;
+            }
+            
+            const task = TASKS.find(t => t.id === taskId);
+            
+            if (task && task.status !== 'completed') {
+                // Simulating a brief delay for a 'check' after clicking the external link
+                setTimeout(() => {
+                    if (task.status !== 'completed') {
+                        task.status = 'completed';
+                        nbtBalance += TASK_REWARD;
+                        updateBalance();
+                        saveData(); 
+                        showNotification(`Task "${task.name}" completed! ${TASK_REWARD} NBT added!`);
+                        renderTasks(); 
+                    }
+                }, 1000); 
+            }
+        }
+        
+        window.handleTaskClick = handleTaskClick;
+
+        // --- Profile Section ---
+        
+        withdrawBtn.addEventListener('click', () => {
+            showNotification("The **Withdraw** feature, including NBT to USDT conversion, is not yet available in this phase.");
+        });
+        
+        // --- Deposit Feature Logic (NEW) ---
+        
+        depositBtn.addEventListener('click', openDepositModal);
+
+        function updateDepositSectionDisplay() {
+            depositLimitDisplayEl.textContent = currentDepositLimit.toFixed(0);
+            maxNbtInputEl.textContent = currentDepositLimit.toFixed(0);
+            depositBtn.disabled = currentDepositLimit <= 0;
+            
+            if (currentDepositLimit <= 0) {
+                 depositBtn.textContent = 'Deposit Limit Finished';
+                 showNotification("Your **NBT Deposit Limit** has been reached (5000 NBT).");
+            } else {
+                 depositBtn.textContent = 'Deposit NBT';
+            }
+            saveData(); // Save the limit state
+        }
+        
+        function openDepositModal() {
+            if (currentDepositLimit <= 0) return;
+            
+            // Reset to Stage 1
+            document.querySelectorAll('.modal-stage').forEach(stage => stage.classList.remove('active'));
+            document.getElementById('deposit-stage-1').classList.add('active');
+            
+            // Reset input and calculation
+            depositNbtAmountInput.value = '';
+            depositUsdtResultEl.textContent = '0.0000';
+            userDepositAddressInput.value = '';
+            pendingDepositNBT = 0;
+            pendingDepositUSDT = 0;
+            
+            depositNbtAmountInput.setAttribute('max', currentDepositLimit);
+            updateDepositSectionDisplay();
+            depositModal.style.display = 'block';
+        }
+        
+        window.closeDepositModal = function() {
+            depositModal.style.display = 'none';
+        }
+
+        window.calculateDepositUsdt = function() {
+            let nbtAmount = parseInt(depositNbtAmountInput.value) || 0;
+            
+            // Limit check
+            if (nbtAmount > currentDepositLimit) {
+                nbtAmount = currentDepositLimit;
+                depositNbtAmountInput.value = currentDepositLimit;
+                showNotification(`You can deposit a maximum of ${currentDepositLimit} NBT.`);
+            }
+            
+            if (nbtAmount < 0) {
+                 nbtAmount = 0;
+                 depositNbtAmountInput.value = 0;
+            }
+
+            pendingDepositNBT = nbtAmount;
+            pendingDepositUSDT = nbtAmount * DEPOSIT_NBT_RATE;
+            
+            depositUsdtResultEl.textContent = pendingDepositUSDT.toFixed(4);
+        }
+        
+        window.nextDepositStage = function(stage) {
+            if (stage === 2) {
+                if (pendingDepositNBT <= 0) {
+                    showNotification("Please enter a deposit amount greater than 0.");
+                    return;
+                }
+                
+                // Update Stage 2 details
+                confirmUsdtAmountEl.textContent = pendingDepositUSDT.toFixed(4);
+                confirmNbtAmountEl.textContent = pendingDepositNBT.toFixed(0);
+                
+                document.getElementById('deposit-stage-1').classList.remove('active');
+                document.getElementById('deposit-stage-2').classList.add('active');
+
+            } else if (stage === 3) {
+                const userAddress = userDepositAddressInput.value.trim();
+                
+                if (userAddress.length < 10) { // Simple validation for a "valid-looking" address
+                    showNotification("Please provide your correct Tonkeeper Address.");
+                    return;
+                }
+                
+                finalNbtAmountEl.textContent = pendingDepositNBT.toFixed(0);
+                
+                document.getElementById('deposit-stage-2').classList.remove('active');
+                document.getElementById('deposit-stage-3').classList.add('active');
+            }
+        }
+        
+        window.processDeposit = function() {
+            closeDepositModal();
+            // IMPORTANT: Updated simulation time to 30 seconds
+            showNotification(`Your ${pendingDepositNBT} NBT deposit request is successful! Tokens will be added within 20 minutes (Simulation: 30 seconds).`); 
+            
+            // Simulation of 20-minute (30-second actual) check and add
+            setTimeout(() => {
+                nbtBalance += pendingDepositNBT;
+                currentDepositLimit -= pendingDepositNBT;
+                
+                // Reset pending amounts
+                pendingDepositNBT = 0;
+                pendingDepositUSDT = 0;
+                
+                updateBalance();
+                updateDepositSectionDisplay();
+                saveData();
+                showNotification(`✅ Success! ${finalNbtAmountEl.textContent} NBT has been credited to your account.`);
+                
+            }, 30000); // 30 seconds simulation
+        }
+
+        // --- Trade Section Logic (Dynamic Price) ---
+        
+        // Function to update the NBT_USD_RATE based on trade volume
+        function updatePrice(type, amount) {
+            const numChanges = Math.floor(amount / TRADE_VOLUME_THRESHOLD);
+            let priceChange = 0;
+            
+            // Buy pressure increases price, Sell pressure decreases price
+            if (type === 'buy') {
+                priceChange = numChanges * PRICE_CHANGE_UNIT;
+            } else if (type === 'sell') {
+                priceChange = -(numChanges * PRICE_CHANGE_UNIT);
+            }
+            
+            NBT_USD_RATE += priceChange;
+            
+            // Ensure price is always 6 decimal places and doesn't go below a reasonable floor
+            NBT_USD_RATE = parseFloat(NBT_USD_RATE.toFixed(6));
+            if (NBT_USD_RATE < 0.0001) { // Set a hard floor
+                NBT_USD_RATE = 0.0001;
+            }
+            
+            updateTradeDisplay();
+            saveData();
+        }
+        
+        // Background fluctuation for simulated market
+        function startPriceFluctuation() {
+            // Fluctuate every 1 to 5 minutes
+            const fluctuationInterval = Math.random() * (300000 - 60000) + 60000; 
+            
+            const randomChange = (Math.random() - 0.5) * PRICE_CHANGE_UNIT * 5; // Change by up to 5 units, up or down
+            
+            NBT_USD_RATE += randomChange;
+            
+            // Keep price somewhat close to the base, with a tolerance (e.g., +/- 0.0005)
+            const maxDeviation = 0.0005;
+            if (NBT_USD_RATE > BASE_PRICE + maxDeviation) {
+                NBT_USD_RATE -= PRICE_CHANGE_UNIT;
+            } else if (NBT_USD_RATE < BASE_PRICE - maxDeviation) {
+                NBT_USD_RATE += PRICE_CHANGE_UNIT;
+            }
+            
+            NBT_USD_RATE = parseFloat(NBT_USD_RATE.toFixed(6));
+            
+            updateTradeDisplay();
+            
+            // Call next fluctuation
+            setTimeout(startPriceFluctuation, fluctuationInterval);
+        }
+
+        // Simulated Order Book and History Data
+        const simulatedOrders = {
+            bids: [ // Buy orders (price below current)
+                { price: 0, amount: 85231 },
+                { price: 0, amount: 68456 },
+                { price: 0, amount: 48900 }
+            ],
+            asks: [ // Sell orders (price above current)
+                { price: 0, amount: 52167 },
+                { price: 0, amount: 39873 },
+                { price: 0, amount: 22500 }
+            ],
+        };
+
+        const simulatedHistory = [
+            { type: 'buy', amount: 1500, price: BASE_PRICE, timestamp: new Date(Date.now() - 5000) },
+            { type: 'sell', amount: 2000, price: BASE_PRICE, timestamp: new Date(Date.now() - 15000) },
+            { type: 'buy', amount: 500, price: BASE_PRICE, timestamp: new Date(Date.now() - 30000) },
+        ];
+
+
+        function updateTradeDisplay() {
+            updateBalance(); // Update all balances
+            updateOrderCalculation(); // Update total cost/revenue on the Trade page
+            renderOrderBook();
+            renderTradeHistory();
+            renderCandlestickChart();
+        }
+        
+        // Update order calculation
+        function updateOrderCalculation() {
+            const amount = parseFloat(orderAmountEl.value) || 0;
+            const total = amount * NBT_USD_RATE;
+            orderTotalEl.textContent = total.toFixed(6);
+        }
+
+        // Handle the Buy/Sell action
+        window.handleTrade = function(type) {
+            const amount = Math.floor(parseFloat(orderAmountEl.value));
+            
+            if (!amount || amount <= 0) {
+                showNotification('Please enter a valid whole number amount of NBT to trade.');
+                return;
+            }
+
+            const cost = amount * NBT_USD_RATE;
+
+            if (type === 'buy') {
+                if (cost > usdtBalance) {
+                    showNotification(`Insufficient USDT balance. Needed: ${cost.toFixed(6)} USDT.`);
+                    return;
+                }
+
+                usdtBalance -= cost;
+                nbtBalance += amount;
+                showNotification(`Successfully bought ${amount} NBT for ${cost.toFixed(6)} USDT.`);
+                updatePrice('buy', amount); // Call dynamic price update
+
+            } else { // sell
+                if (amount > nbtBalance) {
+                    showNotification(`Insufficient NBT balance. Available: ${nbtBalance.toFixed(2)} NBT.`);
+                    return;
+                }
+
+                const revenue = cost; // Same calculation
+                nbtBalance -= amount;
+                usdtBalance += revenue;
+                showNotification(`Successfully sold ${amount} NBT for ${revenue.toFixed(6)} USDT.`);
+                updatePrice('sell', amount); // Call dynamic price update
+            }
+
+            // Add trade to history (simulated)
+            simulatedHistory.unshift({ 
+                type: type, 
+                amount: amount, 
+                price: NBT_USD_RATE, 
+                timestamp: new Date() 
+            });
+
+            // Update all displays and persist data
+            orderAmountEl.value = ''; // Clear input
+            updateTradeDisplay();
+            saveData(); 
+        }
+
+        // Attach event listener for trade amount input
+        if(orderAmountEl) {
+            orderAmountEl.addEventListener('input', updateOrderCalculation);
+        }
+        
+        // Render simplified Candlestick Chart (Function body remains the same)
+        function renderCandlestickChart() {
+            if (!candlestickChartEl) return;
+            candlestickChartEl.innerHTML = '';
+            
+            const chartHeight = candlestickChartEl.clientHeight;
+            const currentPrice = NBT_USD_RATE;
+            
+            // Define a visual range around the current price for the chart (e.g., +/- 0.000050)
+            const chartRange = 0.000100; 
+            const maxPrice = currentPrice + chartRange / 2;
+            const minPrice = currentPrice - chartRange / 2;
+            const priceRange = maxPrice - minPrice;
+            
+            const pricesToShow = [
+                currentPrice + 0.000020, 
+                currentPrice + 0.000005, 
+                currentPrice, 
+                currentPrice - 0.000005, 
+                currentPrice - 0.000020
+            ];
+
+            // Draw a few simplified price lines
+            pricesToShow.forEach(price => {
+                if (price < minPrice || price > maxPrice) return;
+                
+                const normalizedPrice = (price - minPrice) / priceRange;
+                
+                const priceLine = document.createElement('div');
+                priceLine.className = 'price-line';
+                priceLine.style.bottom = (normalizedPrice * 100) + '%';
+                priceLine.textContent = price.toFixed(6);
+                
+                // Highlight the current price line
+                if (Math.abs(price - currentPrice) < 0.000001) {
+                    priceLine.style.borderTop = '1px solid var(--accent-color)';
+                    priceLine.style.color = 'var(--accent-color)';
+                }
+                
+                candlestickChartEl.appendChild(priceLine);
+            });
+            
+            // Draw 10 placeholder candles
+            for (let i = 0; i < 10; i++) {
+                // Simulate price movement: last trade history item dictates the trend
+                const lastTrade = simulatedHistory[0] || { type: 'buy' };
+                const isUp = lastTrade.type === 'buy' ? (i % 3 !== 0) : (i % 3 === 0); 
+                
+                const x = 20 + i * 40;
+                const bodyHeight = Math.random() * 10 + 5; 
+                const offset = (Math.random() - 0.5) * 50;
+                
+                // Position the candle around the current price mid-point
+                const normalizedCurrent = (currentPrice - minPrice) / priceRange;
+                const midPointY = chartHeight - (normalizedCurrent * chartHeight);
+                const topOffset = midPointY + offset; 
+                
+                const candleElement = document.createElement('div');
+                candleElement.className = `candlestick ${isUp ? '' : 'candle-down'}`;
+                candleElement.style.left = x + 'px';
+                candleElement.style.height = bodyHeight + 'px';
+                candleElement.style.top = topOffset + 'px';
+                
+                candlestickChartEl.appendChild(candleElement);
+            }
+        }
+
+        // Update order book display (Simulated - Function body remains the same)
+        function renderOrderBook() {
+            if (!orderBookEl) return;
+            orderBookEl.innerHTML = '';
+            
+            // Update simulated order prices relative to the current price
+            simulatedOrders.asks.forEach((order, index) => {
+                // Asks are above the current price
+                order.price = NBT_USD_RATE + (0.000010 * (index + 1));
+            });
+            simulatedOrders.bids.forEach((order, index) => {
+                // Bids are below the current price
+                order.price = NBT_USD_RATE - (0.000010 * (index + 1));
+            });
+
+            // Show asks (sell orders)
+            simulatedOrders.asks.slice().reverse().forEach(order => {
+                const orderElement = document.createElement('div');
+                orderElement.className = 'order-row order-ask';
+                orderElement.innerHTML = `
+                    <div class="order-price">${order.price.toFixed(6)}</div>
+                    <div class="order-amount">${order.amount.toLocaleString()}</div>
+                `;
+                orderBookEl.appendChild(orderElement);
+            });
+            
+            // Current Price Row (highlighted)
+            const currentPriceRow = document.createElement('div');
+            currentPriceRow.className = 'order-row';
+            currentPriceRow.style.backgroundColor = 'rgba(96, 165, 250, 0.2)';
+            currentPriceRow.style.fontWeight = 'bold';
+            currentPriceRow.style.borderRadius = '3px';
+            currentPriceRow.innerHTML = `
+                <div class="order-price" style="color: var(--accent-color);">${NBT_USD_RATE.toFixed(6)}</div>
+                <div class="order-amount">CURRENT PRICE</div>
+            `;
+            orderBookEl.appendChild(currentPriceRow);
+
+            // Show bids (buy orders)
+            simulatedOrders.bids.forEach(order => {
+                const orderElement = document.createElement('div');
+                orderElement.className = 'order-row order-bid';
+                orderElement.innerHTML = `
+                    <div class="order-price">${order.price.toFixed(6)}</div>
+                    <div class="order-amount">${order.amount.toLocaleString()}</div>
+                `;
+                orderBookEl.appendChild(orderElement);
+            });
+        }
+
+        // Update trade history (Simulated - Function body remains the same)
+        function renderTradeHistory() {
+            if (!tradeHistoryEl) return;
+            tradeHistoryEl.innerHTML = '';
+            
+            simulatedHistory.slice(0, 5).forEach(trade => {
+                const historyElement = document.createElement('div');
+                historyElement.className = 'history-row';
+                historyElement.innerHTML = `
+                    <div class="history-time">${trade.timestamp.toLocaleTimeString()}</div>
+                    <div class="history-price history-${trade.type}">${trade.price.toFixed(6)}</div>
+                    <div class="history-amount">${trade.amount.toFixed(0)}</div>
+                `;
+                tradeHistoryEl.appendChild(historyElement);
+            });
+        }
+
+
+        // --- Initialization ---
+
+        function initialize() {
+            // Check if LocalStorage is supported before continuing
+            if (typeof(Storage) === "undefined") {
+                showNotification("Warning: Local Storage is not supported by your browser. Data will not be saved.");
+                // Set initial values if storage is not available (defaults already set at the top)
+            } else {
+                const dataLoaded = loadData();
+                
+                if (dataLoaded) {
+                    applyTaskStatuses();
+                } else {
+                     // If no data loaded, the global variables already have the default values, so just save the initial state.
+                     saveData(); 
+                }
+            }
+            
+            // Ensure initialDailyPrice is set for the 24h change calculation (resets daily)
+             if (Date.now() - lastTapTime >= (24 * 60 * 60 * 1000) && lastTapTime !== 0) {
+                 initialDailyPrice = NBT_USD_RATE;
+             }
+             
+            saveData(); // Save the initial/corrected state
+            
+            checkAdLimits(); 
+            updateEarnSectionDisplay(); 
+            updateDepositSectionDisplay(); 
+            
+            if (adCooldown) {
+                // If the app reloads during cooldown, restart the timer
+                // Note: lastAdHourResetTime is actually used to store the last ad watch time in the previous code logic, which is fine for calculating remaining cooldown.
+                const remainingCooldown = AD_COOLDOWN_SECONDS - Math.floor((Date.now() - lastAdHourResetTime) / 1000); 
+                if (remainingCooldown > 0) {
+                   startAdCooldown(remainingCooldown);
+                } else {
+                    adCooldown = false;
+                    adCooldownDisplayEl.textContent = 'Ready';
+                }
+            } else {
+                 adCooldownDisplayEl.textContent = 'Ready';
+            }
+            
+            updateTapTimer();
+            renderTasks();
+            updateBalance(); 
+            updateTradeDisplay(); 
+            
+            // Start price fluctuation simulation
+            startPriceFluctuation();
+        }
+        
+        // ** REMOVED: Expose reset function globally **
+
+        initialize();
+    </script>
+</body>
+</html>
