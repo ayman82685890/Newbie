@@ -62,6 +62,8 @@
             padding: 15px;
             background: rgba(0, 0, 0, 0.6);
             border-bottom: 2px solid var(--accent-color);
+            /* NEW: Hide header when trade section is active */
+            /* This is a JS solution, but keep CSS for the general header */
         }
         
         .logo {
@@ -97,10 +99,21 @@
             display: block;
         }
         
+        /* UPDATED: Trade section to take full viewport height minus menu */
         #trade {
             padding: 0;
             background: var(--trade-bg);
             color: var(--text-light);
+            /* Calculate full height: 100vh - menu height (60px) */
+            height: 100vh; 
+            position: absolute; /* Take over the full container */
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 50; /* Above other content */
+            max-width: 500px; /* Constrain to container size */
+            margin: 0 auto;
         }
         
         .menu {
@@ -364,9 +377,8 @@
         /* Trade Section - Integrated Styles */
 
         .trade-content-wrapper {
-            /* Adjusted for a better fit */
-            height: 100%;
-            max-height: calc(100vh - 70px - 60px); /* Adjusting max-height: Total height - header height - menu height */
+            /* Full height minus the menu (60px) */
+            height: calc(100vh - 60px); 
             display: flex;
             flex-direction: column;
             overflow-y: auto;
@@ -375,39 +387,40 @@
 
         .trade-header {
             background: var(--trade-panel-bg);
-            padding: 15px;
+            padding: 10px 15px; /* Reduced padding */
             border-bottom: 1px solid var(--trade-border);
         }
 
         .current-price {
-            font-size: 2rem;
+            font-size: 2.2rem; /* Slightly larger */
             font-weight: bold;
-            text-align: center;
-            margin-bottom: 5px;
+            text-align: left; /* Aligned left for better integration */
+            margin-bottom: 2px;
         }
 
         .price-usd {
-            text-align: center;
+            text-align: left;
             color: var(--text-muted);
-            font-size: 0.8rem;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
         }
         
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-top: 15px;
             font-size: 0.8rem;
+            text-align: left; /* Aligned left */
         }
 
         .stat-item {
-            text-align: center;
+            text-align: left;
         }
 
         .stat-label {
             color: var(--text-muted);
             font-size: 0.7rem;
-            margin-bottom: 3px;
+            margin-bottom: 1px;
         }
 
         .stat-value {
@@ -415,11 +428,11 @@
         }
 
         .chart-container {
-            height: 200px;
+            height: 350px; /* Taller chart for better visual */
             background: var(--trade-bg);
             border-bottom: 1px solid var(--trade-border);
             position: relative;
-            overflow: hidden; /* Ensure candles don't overflow */
+            overflow: hidden; 
         }
 
         .candlestick-chart {
@@ -452,49 +465,14 @@
         }
 
         .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: block; 
             flex-grow: 1;
-            overflow: hidden; /* Prevent content overflow */
-        }
-
-        .order-section {
-            background: var(--trade-panel-bg);
-            border-right: 1px solid var(--trade-border);
-            padding: 10px;
-            height: 100%;
-            overflow-y: auto;
-        }
-
-        .section-title {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .order-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-            font-size: 0.75rem;
-        }
-
-        .order-price {
-            font-weight: bold;
-        }
-
-        .order-bid .order-price {
-            color: var(--up-color);
-        }
-
-        .order-ask .order-price {
-            color: var(--down-color);
+            overflow-y: auto; 
         }
         
         .trading-interface {
             background: var(--trade-panel-bg);
-            padding: 10px;
+            padding: 15px; 
         }
         
         .balance-info {
@@ -666,18 +644,18 @@
         /* IMPROVED CANDLESTICK STYLES - LARGER AND MORE VISIBLE */
         .candlestick {
             position: absolute;
-            width: 15px; /* Wider for better visibility */
-            border-radius: 2px;
+            width: 25px; /* Increased width for better visibility */
+            border-radius: 2px; /* Slight rounded corners */
             transition: all 0.5s ease-out;
             z-index: 5;
-            box-shadow: 0 0 3px rgba(0,0,0,0.5);
+            box-shadow: 0 0 3px rgba(0,0,0,0.5); 
         }
         
         /* The thin line part of the candle (wick) */
         .candlestick::before {
             content: '';
             position: absolute;
-            width: 2px;
+            width: 3px; 
             height: 100%;
             background: inherit;
             left: 50%;
@@ -687,10 +665,12 @@
 
         .candle-up {
             background: var(--up-color);
+            border: 1px solid var(--up-color); /* Added border */
         }
         
         .candle-down {
             background: var(--down-color);
+            border: 1px solid var(--down-color); /* Added border */
         }
         
         .price-line {
@@ -704,7 +684,41 @@
             z-index: 1;
         }
         
-        /* Trade History/Order Book Styling */
+        /* Trade History/Order Book Styling - (Kept for Order Book simulation) */
+        .order-section {
+            background: var(--trade-panel-bg);
+            border-top: 1px solid var(--trade-border); 
+            padding: 10px;
+            max-height: 200px; 
+            overflow-y: auto;
+        }
+        
+        .section-title {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .order-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 0.75rem;
+        }
+
+        .order-price {
+            font-weight: bold;
+        }
+
+        .order-bid .order-price {
+            color: var(--up-color);
+        }
+
+        .order-ask .order-price {
+            color: var(--down-color);
+        }
+        
         .history-row {
             display: flex;
             justify-content: space-between;
@@ -913,7 +927,7 @@
 </head>
 <body>
     <div class="container">
-        <header>
+        <header id="main-header">
             <div class="logo">⭐</div>
             <h1>Newbie Coin Bot</h1>
             <p class="subtitle">Tap, Earn, and Trade NBT tokens!</p>
@@ -1134,6 +1148,7 @@
         let adCooldown = false;
         
         const HOUR_IN_MS = 60 * 60 * 1000; 
+        const DAY_IN_MS = 24 * 60 * 60 * 1000;
         const TAP_REWARD = 20;
         const AD_REWARD = 1;
         const TASK_REWARD = 3;
@@ -1141,25 +1156,24 @@
         const DAILY_AD_LIMIT = 60; 
         const HOURLY_AD_LIMIT = 20; 
 
-        // Trade Limits - REMOVED LIMITS
-        const TRADE_SELL_LIMIT = 1000000; // Very high limit (effectively unlimited)
-        const TRADE_BUY_LIMIT = 1000000; // Very high limit (effectively unlimited)
-        
         // Deposit Feature Constants
         const MAX_DEPOSIT_LIMIT = 5000;
-        const DEPOSIT_NBT_RATE = 0.0004; // 1 NBT = 0.0004 USDT
+        const DEPOSIT_NBT_RATE = 0.0004; 
         let currentDepositLimit = MAX_DEPOSIT_LIMIT;
         let pendingDepositNBT = 0;
         let pendingDepositUSDT = 0;
         
-        // Dynamic Price for Trading
-        let NBT_USD_RATE = 0.001000; // Starting with the stable price 
+        // Dynamic Price for Trading (Modified for Stronger Fluctuation)
+        let NBT_USD_RATE = 0.001000; 
         const BASE_PRICE = 0.001000; 
-        const PRICE_CHANGE_UNIT = 0.000001; 
+        const TRADE_CHANGE_FACTOR = 0.000015; // Increased impact of trade
+        const FLUCTUATION_RANGE = 0.000030; // Increased random fluctuation range
+        const DRIFT_FACTOR = 0.0000015; // Stronger drift back to daily base
         const TRADE_VOLUME_THRESHOLD = 50; 
         let initialDailyPrice = NBT_USD_RATE; 
+        let lastDailyResetTime = Date.now(); 
         
-        const STORAGE_KEY = 'newbieCoinBotDataV2'; // Changed key for a clean start/migration
+        const STORAGE_KEY = 'newbieCoinBotDataV4'; // Changed key again
 
         // Base TASKS structure
         const TASKS = [
@@ -1173,6 +1187,7 @@
         let savedTaskStatuses = []; 
 
         // DOM elements
+        const mainHeader = document.getElementById('main-header'); // NEW
         const menuBtns = document.querySelectorAll('.menu-btn');
         const sections = document.querySelectorAll('.section');
         const tapBtn = document.getElementById('tap-btn');
@@ -1224,9 +1239,9 @@
                 adCooldown: adCooldown,
                 nbtUsdRate: NBT_USD_RATE,
                 initialDailyPrice: initialDailyPrice,
+                lastDailyResetTime: lastDailyResetTime, 
                 currentDepositLimit: currentDepositLimit, 
                 tasks: TASKS.map(t => ({ id: t.id, status: t.status })),
-                // Persist trade history for better simulation continuity
                 tradeHistory: simulatedHistory.map(h => ({
                     type: h.type,
                     amount: h.amount,
@@ -1257,6 +1272,7 @@
                     
                     NBT_USD_RATE = Number(data.nbtUsdRate) !== undefined ? Number(data.nbtUsdRate) : BASE_PRICE;
                     initialDailyPrice = Number(data.initialDailyPrice) !== undefined ? Number(data.initialDailyPrice) : BASE_PRICE;
+                    lastDailyResetTime = Number(data.lastDailyResetTime) !== undefined ? Number(data.lastDailyResetTime) : Date.now(); 
                     currentDepositLimit = Number(data.currentDepositLimit) !== undefined ? Number(data.currentDepositLimit) : MAX_DEPOSIT_LIMIT; 
 
                     if (data.tasks && Array.isArray(data.tasks)) {
@@ -1264,7 +1280,7 @@
                     }
                     
                     if (data.tradeHistory && Array.isArray(data.tradeHistory)) {
-                        simulatedHistory.length = 0; // Clear default
+                        simulatedHistory.length = 0; 
                         data.tradeHistory.forEach(h => {
                             simulatedHistory.unshift({
                                 type: h.type,
@@ -1304,6 +1320,13 @@
                 menuBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 
+                // Toggle header visibility
+                if (sectionId === 'trade') {
+                    mainHeader.style.display = 'none';
+                } else {
+                    mainHeader.style.display = 'block';
+                }
+
                 sections.forEach(section => {
                     section.classList.remove('active');
                     if (section.id === sectionId) {
@@ -1318,13 +1341,17 @@
                 } else if (sectionId === 'profile') {
                     updateDepositSectionDisplay(); 
                 }
-                updateBalance(); // Ensure balance is fresh on every view switch
+                updateBalance(); 
             });
         });
+        
+        // Initial header state (Trade is not active on load)
+        if (sections[0].id === 'home' && sections[0].classList.contains('active')) {
+             mainHeader.style.display = 'block';
+        }
 
         // Update Balances (General)
         function updateBalance() {
-            // Ensure nbtBalance and usdtBalance are treated as numbers
             nbtBalance = parseFloat(nbtBalance.toFixed(2));
             usdtBalance = parseFloat(usdtBalance.toFixed(4)); 
 
@@ -1332,7 +1359,6 @@
             usdBalanceEl.textContent = `$${(nbtBalance * NBT_USD_RATE).toFixed(2)}`;
             usdtBalanceEl.textContent = `${usdtBalance.toFixed(4)} USDT`;
             
-            // Also update Trade section balances
             if (tradeUsdtBalanceDisplayEl) {
                 tradeUsdtBalanceDisplayEl.textContent = `${usdtBalance.toFixed(4)} USDT`;
             }
@@ -1340,7 +1366,6 @@
                 tradeNbtBalanceDisplayEl.textContent = `${nbtBalance.toFixed(2)} NBT`;
             }
 
-            // Also update Trade Price Display
             const priceDifference = NBT_USD_RATE - initialDailyPrice;
             const percentageChange = (priceDifference / initialDailyPrice) * 100;
             const color = priceDifference >= 0 ? 'var(--up-color)' : 'var(--down-color)';
@@ -1412,7 +1437,7 @@
         tapCoin.addEventListener('click', handleTap);
 
         function handleTap() {
-            const fullCooldown = 24 * 60 * 60 * 1000;
+            const fullCooldown = DAY_IN_MS;
             const timePassed = Date.now() - lastTapTime;
             if (timePassed < fullCooldown) return;
 
@@ -1443,7 +1468,7 @@
 
         function updateTapTimer() {
             const now = Date.now();
-            const fullCooldown = 24 * 60 * 60 * 1000;
+            const fullCooldown = DAY_IN_MS;
             const timePassed = now - lastTapTime;
             const timeRemaining = fullCooldown - timePassed;
             
@@ -1575,7 +1600,6 @@
             const task = TASKS.find(t => t.id === taskId);
             
             if (task && task.status !== 'completed') {
-                // Simulating a brief delay for a 'check' after clicking the external link
                 setTimeout(() => {
                     if (task.status !== 'completed') {
                         task.status = 'completed';
@@ -1707,13 +1731,14 @@
         // --- Trade Section Logic (Dynamic Price) ---
         
         function updatePrice(type, amount) {
-            const numChanges = Math.floor(amount / TRADE_VOLUME_THRESHOLD);
+            // Apply a stronger impact for trades
+            const tradeChange = TRADE_CHANGE_FACTOR * Math.sqrt(amount / TRADE_VOLUME_THRESHOLD);
             let priceChange = 0;
             
             if (type === 'buy') {
-                priceChange = numChanges * PRICE_CHANGE_UNIT;
+                priceChange = tradeChange; // Upward pressure
             } else if (type === 'sell') {
-                priceChange = -(numChanges * PRICE_CHANGE_UNIT);
+                priceChange = -tradeChange; // Downward pressure
             }
             
             NBT_USD_RATE += priceChange;
@@ -1727,18 +1752,26 @@
             saveData();
         }
         
-        // Background fluctuation for simulated market
+        // NEW: Background fluctuation for simulated market (More frequent and varied)
         function startPriceFluctuation() {
-            const fluctuationInterval = Math.random() * (300000 - 60000) + 60000; 
-            const randomChange = (Math.random() - 0.5) * PRICE_CHANGE_UNIT * 5; 
+            // Random fluctuation every 3-10 seconds (faster)
+            const fluctuationInterval = Math.random() * (10000 - 3000) + 3000; 
+            
+            // Random change based on FLUCTUATION_RANGE
+            const randomChange = (Math.random() - 0.5) * FLUCTUATION_RANGE; 
             
             NBT_USD_RATE += randomChange;
             
-            const maxDeviation = 0.0005;
-            if (NBT_USD_RATE > BASE_PRICE + maxDeviation) {
-                NBT_USD_RATE -= PRICE_CHANGE_UNIT;
-            } else if (NBT_USD_RATE < BASE_PRICE - maxDeviation) {
-                NBT_USD_RATE += PRICE_CHANGE_UNIT;
+            // Tendency to move back towards the initialDailyPrice, but slowly
+            if (NBT_USD_RATE > initialDailyPrice) {
+                 NBT_USD_RATE -= DRIFT_FACTOR;
+            } else if (NBT_USD_RATE < initialDailyPrice) {
+                 NBT_USD_RATE += DRIFT_FACTOR;
+            }
+            
+            // Keep price above a minimum
+            if (NBT_USD_RATE < 0.0001) { 
+                NBT_USD_RATE = 0.0001;
             }
             
             NBT_USD_RATE = parseFloat(NBT_USD_RATE.toFixed(6));
@@ -1747,6 +1780,33 @@
             
             setTimeout(startPriceFluctuation, fluctuationInterval);
         }
+        
+        // NEW: Daily Price Reset for 24h market simulation
+        function startDailyPriceReset() {
+            const now = Date.now();
+            const timePassed = now - lastDailyResetTime;
+            
+            if (timePassed >= DAY_IN_MS) {
+                // Determine the new base price (closer to current rate for continuity)
+                const volatility = 0.000050; 
+                const randomOffset = (Math.random() - 0.5) * volatility;
+                
+                initialDailyPrice = NBT_USD_RATE + randomOffset;
+                initialDailyPrice = parseFloat(initialDailyPrice.toFixed(6));
+                
+                // Ensure the new base price is within a reasonable range
+                if (initialDailyPrice < BASE_PRICE * 0.5) initialDailyPrice = BASE_PRICE * 0.5;
+                if (initialDailyPrice > BASE_PRICE * 2) initialDailyPrice = BASE_PRICE * 2;
+                
+                lastDailyResetTime = now;
+                showNotification(`Market reset! New 24h starting price: ${initialDailyPrice.toFixed(6)} USDT.`);
+                saveData();
+            }
+            
+            const nextResetTime = lastDailyResetTime + DAY_IN_MS;
+            setTimeout(startDailyPriceReset, nextResetTime - now + 1000); 
+        }
+
 
         // Simulated Order Book and History Data
         const simulatedOrders = {
@@ -1792,37 +1852,31 @@
                 return;
             }
             
-            // REMOVED LIMIT CHECKS - UNLIMITED TRADING
             const tradeValueUsdt = amount * NBT_USD_RATE;
 
             if (type === 'buy') {
-                // Check if user has enough USDT to buy NBT
                 if (tradeValueUsdt > usdtBalance) {
                     showNotification(`Insufficient USDT balance. Needed: ${tradeValueUsdt.toFixed(4)} USDT.`);
                     return;
                 }
 
-                // Execute Buy: Decrease USDT, Increase NBT
                 usdtBalance -= tradeValueUsdt;
                 nbtBalance += amount;
                 showNotification(`✅ Successfully bought ${amount} NBT for ${tradeValueUsdt.toFixed(4)} USDT.`);
                 updatePrice('buy', amount); 
 
             } else { // sell
-                // Check if user has enough NBT to sell
                 if (amount > nbtBalance) {
                     showNotification(`Insufficient NBT balance. Available: ${nbtBalance.toFixed(2)} NBT.`);
                     return;
                 }
 
-                // Execute Sell: Decrease NBT, Increase USDT
                 nbtBalance -= amount;
                 usdtBalance += tradeValueUsdt;
                 showNotification(`✅ Successfully sold ${amount} NBT for ${tradeValueUsdt.toFixed(4)} USDT.`);
                 updatePrice('sell', amount); 
             }
 
-            // Add trade to history
             simulatedHistory.unshift({ 
                 type: type, 
                 amount: amount, 
@@ -1830,13 +1884,11 @@
                 timestamp: new Date() 
             });
 
-            // Update all displays and persist data
             orderAmountEl.value = ''; 
             updateTradeDisplay();
             saveData(); 
         }
 
-        // Attach event listener for trade amount input
         if(orderAmountEl) {
             orderAmountEl.addEventListener('input', updateOrderCalculation);
         }
@@ -1850,26 +1902,22 @@
             const chartWidth = candlestickChartEl.clientWidth;
             const currentPrice = NBT_USD_RATE;
             
-            // Define a visual range around the current price for the chart (+/- 0.000050)
-            const chartRange = 0.000100; 
+            // Define a visual range around the current price (+/- 0.000100) - Wider range
+            const chartRange = 0.000200; 
             const maxPrice = currentPrice + chartRange / 2;
             const minPrice = currentPrice - chartRange / 2;
             const priceRange = maxPrice - minPrice;
             
             // Draw simplified price lines
-            const pricesToShow = [
-                currentPrice + 0.000020, 
-                currentPrice + 0.000005, 
-                currentPrice, 
-                currentPrice - 0.000005, 
-                currentPrice - 0.000020
-            ];
-
-            pricesToShow.forEach(price => {
-                // Check if price is within the calculated chart range
-                if (price < minPrice || price > maxPrice) return;
+            const priceSteps = 0.000050; // Larger price steps
+            const numLines = Math.ceil(chartRange / priceSteps);
+            
+            for (let i = -Math.floor(numLines / 2); i <= Math.ceil(numLines / 2); i++) {
+                let price = currentPrice + (i * priceSteps);
+                price = parseFloat(price.toFixed(6));
                 
-                // Calculate position: 0% (bottom) to 100% (top)
+                if (price < minPrice || price > maxPrice) continue;
+                
                 const normalizedPrice = (price - minPrice) / priceRange;
                 const percentPosition = normalizedPrice * 100;
                 
@@ -1878,39 +1926,66 @@
                 priceLine.style.bottom = percentPosition + '%';
                 priceLine.textContent = price.toFixed(6);
                 
-                if (Math.abs(price - currentPrice) < 0.000001) {
+                if (i === 0) { // Highlight the current price if close to a step
                     priceLine.style.borderTop = '1px solid var(--accent-color)';
                     priceLine.style.color = 'var(--accent-color)';
                     priceLine.style.zIndex = '10';
                 }
                 
                 candlestickChartEl.appendChild(priceLine);
-            });
+            }
             
-            // Draw 8 larger, more visible candles
-            for (let i = 0; i < 8; i++) {
-                const isUp = (i % 3 !== 0); 
+            // Draw 12 larger, more visible candles (12 candles in 500px width is ~40px spacing)
+            const numCandles = 12;
+            const candleWidth = 25; // Increased width for better visibility
+            const spacing = (chartWidth - (numCandles * candleWidth)) / (numCandles + 1);
+
+            for (let i = 0; i < numCandles; i++) {
+                const isUp = (i % 3 === 0) || (i % 4 === 1); // Varied pattern
                 
-                const x = 20 + i * 50; // Adjusted spacing (50px)
-                const bodyHeight = Math.random() * 40 + 20; // Much taller bodies for better visibility
+                // Randomly vary price based on current
+                const priceFluctuation = (Math.random() - 0.5) * priceRange * 0.2; // Small vertical price movement
+                const openPrice = currentPrice + priceFluctuation;
+                const closePrice = openPrice + (isUp ? Math.random() * priceRange * 0.05 : -Math.random() * priceRange * 0.05);
                 
-                // Randomly offset the candle's center relative to the current price line
-                const priceOffsetPixels = (Math.random() - 0.5) * 80; // Up to 40px offset
+                const highPrice = Math.max(openPrice, closePrice) + Math.random() * priceRange * 0.02;
+                const lowPrice = Math.min(openPrice, closePrice) - Math.random() * priceRange * 0.02;
                 
-                // Calculate position of the candle's center based on current price
-                const normalizedCurrent = (currentPrice - minPrice) / priceRange;
-                const currentPriceY = chartHeight - (normalizedCurrent * chartHeight);
-                const centerPointY = currentPriceY + priceOffsetPixels;
+                // Normalize prices
+                const normalizedOpen = (openPrice - minPrice) / priceRange;
+                const normalizedClose = (closePrice - minPrice) / priceRange;
+                const normalizedHigh = (highPrice - minPrice) / priceRange;
+                const normalizedLow = (lowPrice - minPrice) / priceRange;
                 
-                // Calculate the candle's top position
-                const topOffset = centerPointY - (bodyHeight / 2); 
+                // Calculate pixel positions
+                const bodyTop = chartHeight - (Math.max(normalizedOpen, normalizedClose) * chartHeight);
+                const bodyHeight = Math.max(1, Math.abs(normalizedOpen - normalizedClose) * chartHeight);
+                const wickTop = chartHeight - (normalizedHigh * chartHeight);
+                const wickHeight = (normalizedHigh - normalizedLow) * chartHeight;
+                
+                // Position the candle horizontally
+                const x = spacing + i * (candleWidth + spacing);
                 
                 const candleElement = document.createElement('div');
                 candleElement.className = `candlestick ${isUp ? 'candle-up' : 'candle-down'}`;
-                candleElement.style.left = x + 'px';
-                candleElement.style.height = bodyHeight + 'px';
-                candleElement.style.top = topOffset + 'px';
                 
+                // The main candle body
+                candleElement.style.left = x + 'px';
+                candleElement.style.width = candleWidth + 'px';
+                candleElement.style.height = bodyHeight + 'px';
+                candleElement.style.top = bodyTop + 'px';
+                
+                // Create the wick (thin line)
+                const wickElement = document.createElement('div');
+                wickElement.style.position = 'absolute';
+                wickElement.style.left = (x + candleWidth/2 - 1.5) + 'px'; // Center the wick
+                wickElement.style.width = '3px';
+                wickElement.style.height = wickHeight + 'px';
+                wickElement.style.top = wickTop + 'px';
+                wickElement.style.background = isUp ? 'var(--up-color)' : 'var(--down-color)';
+                wickElement.style.zIndex = '4';
+
+                candlestickChartEl.appendChild(wickElement);
                 candlestickChartEl.appendChild(candleElement);
             }
         }
@@ -1920,11 +1995,12 @@
             if (!orderBookEl) return;
             orderBookEl.innerHTML = '';
             
+            // Update prices based on current rate
             simulatedOrders.asks.forEach((order, index) => {
-                order.price = NBT_USD_RATE + (0.000010 * (index + 1));
+                order.price = NBT_USD_RATE + (0.000005 * (index + 1));
             });
             simulatedOrders.bids.forEach((order, index) => {
-                order.price = NBT_USD_RATE - (0.000010 * (index + 1));
+                order.price = NBT_USD_RATE - (0.000005 * (index + 1));
             });
 
             // Show asks (sell orders)
@@ -1967,7 +2043,6 @@
             if (!tradeHistoryEl) return;
             tradeHistoryEl.innerHTML = '';
             
-            // Only keep the last 50 history entries to prevent memory issues
             simulatedHistory = simulatedHistory.slice(0, 50);
 
             simulatedHistory.slice(0, 5).forEach(trade => {
@@ -1998,23 +2073,16 @@
                 }
             }
             
-            // Check if it's a new 24h cycle
-             const fullCooldown = 24 * 60 * 60 * 1000;
-             if (Date.now() - lastTapTime >= fullCooldown && lastTapTime !== 0) {
-                 // Reset 24h price tracking, but only if a full day has passed since last check
-                 initialDailyPrice = NBT_USD_RATE;
-             }
+            // Check for daily reset on load
+            startDailyPriceReset(); 
              
-            saveData(); 
-            
             checkAdLimits(); 
             updateEarnSectionDisplay(); 
             updateDepositSectionDisplay(); 
             
             // Cooldown check
             if (adCooldown) {
-                const lastAdTime = lastAdHourResetTime; // Assuming this was set to Date.now() on last ad watch
-                const timePassed = Date.now() - lastAdTime;
+                const timePassed = Date.now() - lastAdHourResetTime;
                 const remainingCooldown = AD_COOLDOWN_SECONDS - Math.floor(timePassed / 1000); 
 
                 if (remainingCooldown > 0) {
@@ -2032,6 +2100,7 @@
             updateBalance(); 
             updateTradeDisplay(); 
             
+            // Start the background price fluctuation
             startPriceFluctuation();
         }
         
