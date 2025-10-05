@@ -978,8 +978,8 @@
             <div class="section" id="trade">
                 <div class="trade-content-wrapper">
                     <div class="trade-header">
-                        <div class="current-price" id="tradeCurrentPrice">0.003000</div>
-                        <div class="price-usd">≈<span id="tradeUsdPrice">0.003000</span> USDT</div>
+                        <div class="current-price" id="tradeCurrentPrice">0.010000</div>
+                        <div class="price-usd">≈<span id="tradeUsdPrice">0.010000</span> USDT</div>
                         <div class="stats-grid">
                             <div class="stat-item">
                                 <div class="stat-label">Symbol</div>
@@ -1061,7 +1061,7 @@
                 <div class="balance">
                     <h3>Your Balance</h3>
                     <div class="balance-amount" id="nbt-balance">500 NBT</div>
-                    <div class="usd-info">Estimated USDT Value: <span id="usd-balance">$1.50</span></div>
+                    <div class="usd-info">Estimated USDT Value: <span id="usd-balance">$5.00</span></div>
                     <div class="balance-amount" id="usdt-balance">0.00 USDT</div>
                     <div class="usd-info">Your **USDT** will be available here after the **Trade** feature launches!</div>
                 </div>
@@ -1091,7 +1091,7 @@
             </div>
             
             <div id="deposit-stage-1" class="modal-stage active">
-                <p class="text-sm">Current Buy Rate: <span class="text-green">1 NBT = 0.0015 USDT</span></p>
+                <p class="text-sm">Current Buy Rate: <span class="text-green">1 NBT = 0.0080 USDT</span></p>
                 <p class="limit-info">Remaining Deposit Limit: <span id="deposit-limit-display">15000</span> NBT</p>
 
                 <div class="convert-input-group">
@@ -1161,9 +1161,9 @@
         const DAILY_AD_LIMIT = 60; 
         const HOURLY_AD_LIMIT = 20; 
 
-        // Deposit Feature Constants - UPDATED
+        // Deposit Feature Constants - UPDATED for 0.01 price
         const MAX_DEPOSIT_LIMIT = 15000;
-        const DEPOSIT_NBT_RATE = 0.0015; 
+        const DEPOSIT_NBT_RATE = 0.0080; // 1 NBT costs 0.0080 USDT to buy (lower than market price 0.01)
         let currentDepositLimit = MAX_DEPOSIT_LIMIT;
         let pendingDepositNBT = 0;
         let pendingDepositUSDT = 0;
@@ -1173,12 +1173,13 @@
         let tradesToday = 0;
         let lastTradeDayResetTime = 0; 
         
-        // Dynamic Price for Trading (Modified for Stronger Fluctuation) - UPDATED
-        let NBT_USD_RATE = 0.003000; 
-        const BASE_PRICE = 0.003000; 
-        const TRADE_CHANGE_FACTOR = 0.000045; // Increased impact of trade
-        const FLUCTUATION_RANGE = 0.000090; // Increased random fluctuation range
-        const DRIFT_FACTOR = 0.0000045; // Stronger drift back to daily base
+        // Dynamic Price for Trading (Modified for 0.01 price) - UPDATED
+        let NBT_USD_RATE = 0.010000; 
+        const BASE_PRICE = 0.010000; // New Base Price
+        // Scaled factors for 0.01 price (approx. 3.33x the old factors)
+        const TRADE_CHANGE_FACTOR = 0.000150; 
+        const FLUCTUATION_RANGE = 0.000300; 
+        const DRIFT_FACTOR = 0.000015; 
         const TRADE_VOLUME_THRESHOLD = 50; 
         let initialDailyPrice = NBT_USD_RATE; 
         let lastDailyResetTime = Date.now(); 
@@ -1377,6 +1378,7 @@
             usdtBalance = parseFloat(usdtBalance.toFixed(4)); 
 
             nbtBalanceEl.textContent = `${nbtBalance.toFixed(2)} NBT`;
+            // Calculate and display USD value using 2 decimal places for money display
             usdBalanceEl.textContent = `$${(nbtBalance * NBT_USD_RATE).toFixed(2)}`;
             usdtBalanceEl.textContent = `${usdtBalance.toFixed(4)} USDT`;
             
@@ -1794,9 +1796,11 @@
             
             NBT_USD_RATE += priceChange;
             
+            // Ensure price is kept to 6 decimal places (for consistency)
             NBT_USD_RATE = parseFloat(NBT_USD_RATE.toFixed(6));
-            if (NBT_USD_RATE < 0.0001) { 
-                NBT_USD_RATE = 0.0001;
+            // Set a minimum floor for the price
+            if (NBT_USD_RATE < 0.001) { 
+                NBT_USD_RATE = 0.001;
             }
             
             updateTradeDisplay();
@@ -1821,8 +1825,8 @@
             }
             
             // Keep price above a minimum
-            if (NBT_USD_RATE < 0.0001) { 
-                NBT_USD_RATE = 0.0001;
+            if (NBT_USD_RATE < 0.001) { 
+                NBT_USD_RATE = 0.001;
             }
             
             NBT_USD_RATE = parseFloat(NBT_USD_RATE.toFixed(6));
@@ -1839,13 +1843,13 @@
             
             if (timePassed >= DAY_IN_MS) {
                 // Determine the new base price (closer to current rate for continuity)
-                const volatility = 0.000150; 
+                const volatility = 0.000500; // Increased volatility for 0.01 price
                 const randomOffset = (Math.random() - 0.5) * volatility;
                 
                 initialDailyPrice = NBT_USD_RATE + randomOffset;
                 initialDailyPrice = parseFloat(initialDailyPrice.toFixed(6));
                 
-                // Ensure the new base price is within a reasonable range
+                // Ensure the new base price is within a reasonable range (50% to 200% of BASE_PRICE)
                 if (initialDailyPrice < BASE_PRICE * 0.5) initialDailyPrice = BASE_PRICE * 0.5;
                 if (initialDailyPrice > BASE_PRICE * 2) initialDailyPrice = BASE_PRICE * 2;
                 
@@ -1965,14 +1969,14 @@
             const chartWidth = candlestickChartEl.clientWidth;
             const currentPrice = NBT_USD_RATE;
             
-            // Define a visual range around the current price (+/- 0.000300) - Wider range
-            const chartRange = 0.000600; 
+            // Define a visual range around the current price (+/- 0.002000) - Wider range scaled for 0.01 price
+            const chartRange = 0.004000; 
             const maxPrice = currentPrice + chartRange / 2;
             const minPrice = currentPrice - chartRange / 2;
             const priceRange = maxPrice - minPrice;
             
             // Draw simplified price lines
-            const priceSteps = 0.000150; // Larger price steps
+            const priceSteps = 0.000500; // Larger price steps
             const numLines = Math.ceil(chartRange / priceSteps);
             
             for (let i = -Math.floor(numLines / 2); i <= Math.ceil(numLines / 2); i++) {
@@ -2060,10 +2064,12 @@
             
             // Update prices based on current rate
             simulatedOrders.asks.forEach((order, index) => {
-                order.price = NBT_USD_RATE + (0.000015 * (index + 1));
+                // Scaled price change for 0.01 price (approx 0.000050)
+                order.price = NBT_USD_RATE + (0.000050 * (index + 1)); 
             });
             simulatedOrders.bids.forEach((order, index) => {
-                order.price = NBT_USD_RATE - (0.000015 * (index + 1));
+                 // Scaled price change for 0.01 price (approx 0.000050)
+                order.price = NBT_USD_RATE - (0.000050 * (index + 1));
             });
 
             // Show asks (sell orders)
