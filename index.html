@@ -258,7 +258,7 @@
             cursor: not-allowed;
         }
 
-        .tap-btn:active:not(:disabled) {
+        .tap-btn:active:not(.disabled) {
             transform: translateY(3px);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
         }
@@ -293,7 +293,7 @@
             transition: all 0.3s;
         }
 
-        .ad-btn:active:not(:disabled) {
+        .ad-btn:active:not(.disabled) {
             transform: translateY(3px);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
         }
@@ -535,6 +535,11 @@
         .btn-sell {
             background: linear-gradient(135deg, var(--down-color), #dc2626);
             color: white;
+        }
+        
+        .btn-trade:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         /* Profile Section */
@@ -973,8 +978,8 @@
             <div class="section" id="trade">
                 <div class="trade-content-wrapper">
                     <div class="trade-header">
-                        <div class="current-price" id="tradeCurrentPrice">0.001000</div>
-                        <div class="price-usd">≈<span id="tradeUsdPrice">0.001000</span> USDT</div>
+                        <div class="current-price" id="tradeCurrentPrice">0.003000</div>
+                        <div class="price-usd">≈<span id="tradeUsdPrice">0.003000</span> USDT</div>
                         <div class="stats-grid">
                             <div class="stat-item">
                                 <div class="stat-label">Symbol</div>
@@ -1011,7 +1016,7 @@
                             </div>
                             <div class="balance-info">
                                 <span>NBT Available:</span>
-                                <span id="tradeNbtBalanceDisplay">700 NBT</span>
+                                <span id="tradeNbtBalanceDisplay">500 NBT</span>
                             </div>
                             
                             <div class="form-group">
@@ -1024,13 +1029,13 @@
                             </div>
                             
                             <div class="balance-info" style="color: var(--accent-color);">
-                                <span>Unlimited Trading</span>
-                                <span>No Restrictions</span>
+                                <span>Daily Trade Limit:</span>
+                                <span id="tradeLimitDisplay">4/4</span>
                             </div>
 
                             <div class="trade-buttons">
-                                <button class="btn-trade btn-buy" onclick="handleTrade('buy')">BUY NBT</button>
-                                <button class="btn-trade btn-sell" onclick="handleTrade('sell')">SELL NBT</button>
+                                <button class="btn-trade btn-buy" id="btn-buy" onclick="handleTrade('buy')">BUY NBT</button>
+                                <button class="btn-trade btn-sell" id="btn-sell" onclick="handleTrade('sell')">SELL NBT</button>
                             </div>
                         </div>
 
@@ -1055,8 +1060,8 @@
                 </div>
                 <div class="balance">
                     <h3>Your Balance</h3>
-                    <div class="balance-amount" id="nbt-balance">700 NBT</div>
-                    <div class="usd-info">Estimated USDT Value: <span id="usd-balance">$0.70</span></div>
+                    <div class="balance-amount" id="nbt-balance">500 NBT</div>
+                    <div class="usd-info">Estimated USDT Value: <span id="usd-balance">$1.50</span></div>
                     <div class="balance-amount" id="usdt-balance">0.00 USDT</div>
                     <div class="usd-info">Your **USDT** will be available here after the **Trade** feature launches!</div>
                 </div>
@@ -1086,11 +1091,11 @@
             </div>
             
             <div id="deposit-stage-1" class="modal-stage active">
-                <p class="text-sm">Current Buy Rate: <span class="text-green">1 NBT = 0.0004 USDT</span></p>
-                <p class="limit-info">Remaining Deposit Limit: <span id="deposit-limit-display">5000</span> NBT</p>
+                <p class="text-sm">Current Buy Rate: <span class="text-green">1 NBT = 0.0015 USDT</span></p>
+                <p class="limit-info">Remaining Deposit Limit: <span id="deposit-limit-display">15000</span> NBT</p>
 
                 <div class="convert-input-group">
-                    <label for="depositNbtAmount">NBT Token Amount (Max: <span id="maxNbtInput">5000</span>)</label>
+                    <label for="depositNbtAmount">NBT Token Amount (Max: <span id="maxNbtInput">15000</span>)</label>
                     <input type="number" id="depositNbtAmount" placeholder="0" min="1" step="1" oninput="calculateDepositUsdt()">
                 </div>
                 
@@ -1139,7 +1144,7 @@
 
     <script>
         // Global variables and constants
-        let nbtBalance = 700; 
+        let nbtBalance = 500; 
         let usdtBalance = 0.00; 
         let dailyAdsWatched = 0;
         let adsWatchedThisHour = 0; 
@@ -1156,24 +1161,29 @@
         const DAILY_AD_LIMIT = 60; 
         const HOURLY_AD_LIMIT = 20; 
 
-        // Deposit Feature Constants
-        const MAX_DEPOSIT_LIMIT = 5000;
-        const DEPOSIT_NBT_RATE = 0.0004; 
+        // Deposit Feature Constants - UPDATED
+        const MAX_DEPOSIT_LIMIT = 15000;
+        const DEPOSIT_NBT_RATE = 0.0015; 
         let currentDepositLimit = MAX_DEPOSIT_LIMIT;
         let pendingDepositNBT = 0;
         let pendingDepositUSDT = 0;
+
+        // NEW: Trade Limit Variables
+        const dailyTradeLimit = 4;
+        let tradesToday = 0;
+        let lastTradeDayResetTime = 0; 
         
-        // Dynamic Price for Trading (Modified for Stronger Fluctuation)
-        let NBT_USD_RATE = 0.001000; 
-        const BASE_PRICE = 0.001000; 
-        const TRADE_CHANGE_FACTOR = 0.000015; // Increased impact of trade
-        const FLUCTUATION_RANGE = 0.000030; // Increased random fluctuation range
-        const DRIFT_FACTOR = 0.0000015; // Stronger drift back to daily base
+        // Dynamic Price for Trading (Modified for Stronger Fluctuation) - UPDATED
+        let NBT_USD_RATE = 0.003000; 
+        const BASE_PRICE = 0.003000; 
+        const TRADE_CHANGE_FACTOR = 0.000045; // Increased impact of trade
+        const FLUCTUATION_RANGE = 0.000090; // Increased random fluctuation range
+        const DRIFT_FACTOR = 0.0000045; // Stronger drift back to daily base
         const TRADE_VOLUME_THRESHOLD = 50; 
         let initialDailyPrice = NBT_USD_RATE; 
         let lastDailyResetTime = Date.now(); 
         
-        const STORAGE_KEY = 'newbieCoinBotDataV4'; // Changed key again
+        const STORAGE_KEY = 'newbieCoinBotDataV6'; // Changed key for new trade limit data structure
 
         // Base TASKS structure
         const TASKS = [
@@ -1210,8 +1220,11 @@
         const priceChangeDisplayEl = document.getElementById('priceChangeDisplay');
         const tradeUsdtBalanceDisplayEl = document.getElementById('tradeUsdtBalanceDisplay');
         const tradeNbtBalanceDisplayEl = document.getElementById('tradeNbtBalanceDisplay');
+        const tradeLimitDisplayEl = document.getElementById('tradeLimitDisplay'); // NEW
         const orderAmountEl = document.getElementById('orderAmount');
         const orderTotalEl = document.getElementById('orderTotal');
+        const btnBuy = document.getElementById('btn-buy'); // NEW
+        const btnSell = document.getElementById('btn-sell'); // NEW
         const candlestickChartEl = document.getElementById('candlestickChart');
         const orderBookEl = document.getElementById('orderBook');
         const tradeHistoryEl = document.getElementById('tradeHistory');
@@ -1241,6 +1254,9 @@
                 initialDailyPrice: initialDailyPrice,
                 lastDailyResetTime: lastDailyResetTime, 
                 currentDepositLimit: currentDepositLimit, 
+                // NEW Trade Limit Data
+                tradesToday: tradesToday,
+                lastTradeDayResetTime: lastTradeDayResetTime,
                 tasks: TASKS.map(t => ({ id: t.id, status: t.status })),
                 tradeHistory: simulatedHistory.map(h => ({
                     type: h.type,
@@ -1262,7 +1278,7 @@
                 if (savedData) {
                     const data = JSON.parse(savedData);
                     
-                    nbtBalance = Number(data.nbtBalance) !== undefined ? Number(data.nbtBalance) : 700; 
+                    nbtBalance = Number(data.nbtBalance) !== undefined ? Number(data.nbtBalance) : 500; 
                     usdtBalance = Number(data.usdtBalance) !== undefined ? Number(data.usdtBalance) : 0.00; 
                     dailyAdsWatched = Number(data.dailyAdsWatched) || 0;
                     adsWatchedThisHour = Number(data.adsWatchedThisHour) || 0;
@@ -1274,6 +1290,10 @@
                     initialDailyPrice = Number(data.initialDailyPrice) !== undefined ? Number(data.initialDailyPrice) : BASE_PRICE;
                     lastDailyResetTime = Number(data.lastDailyResetTime) !== undefined ? Number(data.lastDailyResetTime) : Date.now(); 
                     currentDepositLimit = Number(data.currentDepositLimit) !== undefined ? Number(data.currentDepositLimit) : MAX_DEPOSIT_LIMIT; 
+                    
+                    // NEW Trade Limit Data Load
+                    tradesToday = Number(data.tradesToday) || 0;
+                    lastTradeDayResetTime = Number(data.lastTradeDayResetTime) || 0;
 
                     if (data.tasks && Array.isArray(data.tasks)) {
                        savedTaskStatuses = data.tasks;
@@ -1323,6 +1343,7 @@
                 // Toggle header visibility
                 if (sectionId === 'trade') {
                     mainHeader.style.display = 'none';
+                    checkTradeLimits(); // Check trade limit on entering trade section
                 } else {
                     mainHeader.style.display = 'block';
                 }
@@ -1632,7 +1653,7 @@
             
             if (currentDepositLimit <= 0) {
                  depositBtn.textContent = 'Deposit Limit Finished';
-                 showNotification("Your **NBT Deposit Limit** has been reached (5000 NBT).");
+                 showNotification("Your **NBT Deposit Limit** has been reached (15000 NBT).");
             } else {
                  depositBtn.textContent = 'Deposit NBT';
             }
@@ -1728,7 +1749,37 @@
         }
 
 
-        // --- Trade Section Logic (Dynamic Price) ---
+        // --- Trade Section Logic (Daily Limit and Dynamic Price) ---
+        
+        // NEW: Check and reset daily trade limit
+        function checkTradeLimits() {
+            const now = Date.now();
+            if (now - lastTradeDayResetTime >= DAY_IN_MS) {
+                tradesToday = 0;
+                lastTradeDayResetTime = now;
+                showNotification("Daily trade limit has been reset! You have 4 trades available.");
+                saveData(); 
+            }
+            updateTradeLimitDisplay();
+        }
+
+        // NEW: Update trade limit display
+        function updateTradeLimitDisplay() {
+            const remaining = dailyTradeLimit - tradesToday;
+            tradeLimitDisplayEl.textContent = `${remaining}/${dailyTradeLimit}`;
+
+            const isLimitReached = remaining <= 0;
+            btnBuy.disabled = isLimitReached;
+            btnSell.disabled = isLimitReached;
+
+            if (isLimitReached) {
+                btnBuy.textContent = 'Limit Reached';
+                btnSell.textContent = 'Limit Reached';
+            } else {
+                 btnBuy.textContent = 'BUY NBT';
+                 btnSell.textContent = 'SELL NBT';
+            }
+        }
         
         function updatePrice(type, amount) {
             // Apply a stronger impact for trades
@@ -1788,7 +1839,7 @@
             
             if (timePassed >= DAY_IN_MS) {
                 // Determine the new base price (closer to current rate for continuity)
-                const volatility = 0.000050; 
+                const volatility = 0.000150; 
                 const randomOffset = (Math.random() - 0.5) * volatility;
                 
                 initialDailyPrice = NBT_USD_RATE + randomOffset;
@@ -1831,6 +1882,7 @@
 
         function updateTradeDisplay() {
             updateBalance(); 
+            checkTradeLimits(); // Check limits before display update
             updateOrderCalculation(); 
             renderOrderBook();
             renderTradeHistory();
@@ -1843,8 +1895,16 @@
             orderTotalEl.textContent = total.toFixed(6);
         }
 
-        // --- UNLIMITED TRADE LOGIC ---
+        // --- TRADE LOGIC WITH LIMIT ---
         window.handleTrade = function(type) {
+            checkTradeLimits(); // Ensure the limit is up-to-date
+
+            if (tradesToday >= dailyTradeLimit) {
+                showNotification(`Daily trade limit of ${dailyTradeLimit} reached. Please try again after 24 hours.`);
+                updateTradeLimitDisplay(); 
+                return;
+            }
+
             let amount = Math.floor(parseFloat(orderAmountEl.value));
             
             if (!amount || amount <= 0) {
@@ -1876,6 +1936,9 @@
                 showNotification(`✅ Successfully sold ${amount} NBT for ${tradeValueUsdt.toFixed(4)} USDT.`);
                 updatePrice('sell', amount); 
             }
+            
+            // Successful Trade Logic
+            tradesToday++; 
 
             simulatedHistory.unshift({ 
                 type: type, 
@@ -1902,14 +1965,14 @@
             const chartWidth = candlestickChartEl.clientWidth;
             const currentPrice = NBT_USD_RATE;
             
-            // Define a visual range around the current price (+/- 0.000100) - Wider range
-            const chartRange = 0.000200; 
+            // Define a visual range around the current price (+/- 0.000300) - Wider range
+            const chartRange = 0.000600; 
             const maxPrice = currentPrice + chartRange / 2;
             const minPrice = currentPrice - chartRange / 2;
             const priceRange = maxPrice - minPrice;
             
             // Draw simplified price lines
-            const priceSteps = 0.000050; // Larger price steps
+            const priceSteps = 0.000150; // Larger price steps
             const numLines = Math.ceil(chartRange / priceSteps);
             
             for (let i = -Math.floor(numLines / 2); i <= Math.ceil(numLines / 2); i++) {
@@ -1997,10 +2060,10 @@
             
             // Update prices based on current rate
             simulatedOrders.asks.forEach((order, index) => {
-                order.price = NBT_USD_RATE + (0.000005 * (index + 1));
+                order.price = NBT_USD_RATE + (0.000015 * (index + 1));
             });
             simulatedOrders.bids.forEach((order, index) => {
-                order.price = NBT_USD_RATE - (0.000005 * (index + 1));
+                order.price = NBT_USD_RATE - (0.000015 * (index + 1));
             });
 
             // Show asks (sell orders)
@@ -2073,8 +2136,9 @@
                 }
             }
             
-            // Check for daily reset on load
+            // Check for daily reset on load for both price and trade limit
             startDailyPriceReset(); 
+            checkTradeLimits(); 
              
             checkAdLimits(); 
             updateEarnSectionDisplay(); 
