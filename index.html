@@ -1186,13 +1186,13 @@
         
         const STORAGE_KEY = 'newbieCoinBotDataV6'; // Changed key for new trade limit data structure
 
-        // Base TASKS structure - UPDATED TASK LIST
+        // Base TASKS structure - UPDATED TASK LIST (Removed task ID 5)
         const TASKS = [
             { id: 1, name: "Join Telegram Channel 1", link: "https://t.me/NEWBIE540", status: "pending" },
             { id: 2, name: "Join Telegram Channel 2", link: "https://t.me/NewbieBXD", status: "pending" },
             { id: 3, name: "Join Telegram Group 1 (Community)", link: "https://t.me/NEWBIECOMMUNIT", status: "pending" },
             { id: 4, name: "Join Telegram Group 2", link: "https://t.me/NWEBIE67", status: "pending" },
-            { id: 5, name: "Join Telegram Channel (New)", link: "https://t.me/safinminar103", status: "pending" } // UPDATED
+            // Removed: { id: 5, name: "Join Telegram Channel (New)", link: "https://t.me/safinminar103", status: "pending" }
         ];
         
         let savedTaskStatuses = []; 
@@ -1297,7 +1297,8 @@
                     lastTradeDayResetTime = Number(data.lastTradeDayResetTime) || 0;
 
                     if (data.tasks && Array.isArray(data.tasks)) {
-                       savedTaskStatuses = data.tasks;
+                       // Filter out the task with ID 5 if it exists in saved data
+                       savedTaskStatuses = data.tasks.filter(t => t.id !== 5);
                     }
                     
                     if (data.tradeHistory && Array.isArray(data.tradeHistory)) {
